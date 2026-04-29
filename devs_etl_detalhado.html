@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL Detalhado DEVS - CISC Belém</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
+
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await mermaid.run({ querySelector: '.mermaid' });
+                const elem = document.querySelector('.mermaid svg');
+                const container = document.getElementById('panzoom-container');
+
+                if (elem) {
+                    elem.style.maxWidth = 'none';
+                    elem.style.height = '100%';
+                    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 0.3, step: 0.3 });
+
+                    container.addEventListener('wheel', panzoom.zoomWithWheel);
+                    document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+                    document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+                    document.getElementById('zoom-reset').addEventListener('click', panzoom.reset);
+                    document.getElementById('fullscreen').addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            container.requestFullscreen().catch(err => {
+                                console.error(`Erro ao entrar em tela cheia: ${err.message}`);
+                            });
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao renderizar o Mermaid:", error);
+            }
+        });
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 p-8 font-sans min-h-screen">
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        
+        <header class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-bold text-slate-900">Pipeline de ETL Detalhado: Operação DEVS Belém</h1>
+            <p class="text-slate-600 mt-2 text-lg">Aprofundamento técnico do fluxo de tratamento de dados internos da Vigilância em Saúde. Este é o processo que transforma o caos do papel em inteligência para o servidor central do CISC.</p>
+        </header>
+
+        <div id="panzoom-container" class="relative bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex justify-center" style="height: 650px;">
+            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-md border border-slate-200">
+                <button id="zoom-in" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Aumentar Zoom">+</button>
+                <button id="zoom-out" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Diminuir Zoom">-</button>
+                <button id="zoom-reset" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold transition-colors" title="Resetar Zoom">1:1</button>
+                <button id="fullscreen" class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded text-xs font-bold transition-colors" title="Tela Cheia">⛶</button>
+            </div>
+            
+            <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+flowchart TD
+    %% Estilos
+    classDef source fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#7f1d1d;
+    classDef process fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+    classDef review fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d;
+    classDef storage fill:#f3e8ff,stroke:#a855f7,stroke-width:2px,color:#4c1d95;
+    classDef destination fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px,color:#0c4a6e;
+
+    subgraph F_INPUT ["1. Fontes de Dados (DEVS)"]
+        A1["📄 Fichas de Notificação Manuais<br>(Epidemiológica / Ambiental)"]:::source
+        A2["📊 Planilhas de Unidades de Saúde<br>(Excel / CSV descentralizado)"]:::source
+        A3["🖥️ Exportações SINAN/SIVEP<br>(Dados parciais federais)"]:::source
+    end
+
+    subgraph F_OCR ["2. Digitalização & OCR"]
+        B1["📸 Scanner / App Mobile"]:::process
+        B2["🤖 Motor de IA (OCR/HTR)<br>(Cálculo de Confidence Score)"]:::process
+        
+        A1 --> B1 --> B2
+    end
+
+    subgraph F_HITL ["3. Validação & Human-in-the-Loop"]
+        C1{"Score > 90%?"}
+        C2["✅ Validação Automática"]:::review
+        C3["👀 Painel de Revisão Web<br>(Correção Humana)"]:::review
+        
+        B2 --> C1
+        C1 -->|Sim| C2
+        C1 -->|Não| C3
+    end
+
+    subgraph F_TRANSFORM ["4. Motor de Normalização (Python)"]
+        D1["🧹 Limpeza de Caracteres<br>(Remoção de lixo e nulos)"]:::process
+        D2["🔍 Validação de Identidade<br>(CPF / CNS / Cartão SUS)"]:::process
+        D3["📍 Padronização Geográfica<br>(Ajuste de Logradouros e Bairros)"]:::process
+        
+        C2 --> D1
+        C3 --> D1
+        A2 --> D1
+        A3 --> D1
+        
+        D1 --> D2 --> D3
+    end
+
+    subgraph F_LOAD ["5. Integração ao Coração do CISC"]
+        E1[("🐘 PostgreSQL (DW Estruturado)")]:::storage
+        E2[("🗄️ MinIO (Bucket de Auditoria)")]:::storage
+        
+        D3 ==>|Carga Higienizada| E1
+        B1 -.->|Backup Imagem Original| E2
+    end
+
+    %% Orquestração (Implícita pelo Maestro Airflow)
+    O["🌪️ Orquestrador Airflow"]
+    O -.->|Trigger| B2
+    O -.->|Trigger| D1
+            </pre>
+        </div>
+
+        <div class="mt-12 border-t pt-8">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">Detalhamento Técnico do Processo</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Coluna 1 -->
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-red-800 flex items-center gap-2 mb-3">
+                            <span class="p-1.5 bg-red-100 rounded-lg">📄</span> 1. Ingestão do Caos
+                        </h3>
+                        <p class="text-slate-700 leading-relaxed text-sm">
+                            O processo começa onde a saúde pública realmente acontece: no papel. Fichas de notificação e planilhas avulsas são coletadas. O desafio aqui é a <b>variabilidade</b> de formatos e a qualidade da caligrafia.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2 mb-3">
+                            <span class="p-1.5 bg-amber-100 rounded-lg">🤖</span> 2. Visão Computacional
+                        </h3>
+                        <p class="text-slate-700 leading-relaxed text-sm">
+                            As imagens são processadas por redes neurais que analisam cada <b>campo individualmente</b> (nome, data, CID, endereço). Em vez de uma nota para o papel todo, a IA atribui um <b>Índice de Confiança por célula</b>, isolando incertezas de forma granular.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-green-800 flex items-center gap-2 mb-3">
+                            <span class="p-1.5 bg-green-100 rounded-lg">👀</span> 3. Revisão Cirúrgica (HITL)
+                        </h3>
+                        <p class="text-slate-700 leading-relaxed text-sm">
+                            A interface de revisão não exige a releitura do documento completo. O sistema destaca <b>apenas os campos duvidosos</b> para o servidor do DEVS. O humano atua de forma cirúrgica, validando apenas as células onde a máquina sinalizou baixa confiança, o que reduz drasticamente o tempo de processamento.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Coluna 2 -->
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="text-lg font-bold text-indigo-800 flex items-center gap-2 mb-3">
+                            <span class="p-1.5 bg-indigo-100 rounded-lg">⚙️</span> 4. Refinaria de Dados (Python)
+                        </h3>
+                        <p class="text-slate-700 leading-relaxed text-sm">
+                            Com os dados já digitais, entra em cena o Python. O pipeline executa <b>deduplicação</b> (evitar contar o mesmo caso duas vezes) e validação cruzada com as bases da Receita e do Cartão SUS.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-purple-800 flex items-center gap-2 mb-3">
+                            <span class="p-1.5 bg-purple-100 rounded-lg">📍</span> 5. Normalização Geográfica
+                        </h3>
+                        <p class="text-slate-700 leading-relaxed text-sm">
+                            O dado é "limpo" territorialmente. Nomes de ruas e bairros grafados incorretamente são corrigidos para padrões oficiais do município, permitindo o cruzamento exato com mapas de risco climático.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-lg font-bold text-sky-800 flex items-center gap-2 mb-3">
+                            <span class="p-1.5 bg-sky-100 rounded-lg">🐘</span> 6. Carga no DW/Datalake
+                        </h3>
+                        <p class="text-slate-700 leading-relaxed text-sm">
+                            O resultado final é injetado no <b>coração do servidor</b>. A partir daqui, o dado do DEVS está pronto para ser consumido pela Sala de Situação e cruzado com fontes agnósticas (CEMADEN, INMET).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

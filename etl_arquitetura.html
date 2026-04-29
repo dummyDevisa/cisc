@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitetura de Dados Agnóstica - CISC Belém</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
+
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await mermaid.run({ querySelector: '.mermaid' });
+                const elem = document.querySelector('.mermaid svg');
+                const container = document.getElementById('panzoom-container');
+
+                if (elem) {
+                    elem.style.maxWidth = 'none';
+                    elem.style.height = '100%';
+                    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 0.3, step: 0.3 });
+
+                    container.addEventListener('wheel', panzoom.zoomWithWheel);
+                    document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+                    document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+                    document.getElementById('zoom-reset').addEventListener('click', panzoom.reset);
+                    document.getElementById('fullscreen').addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            container.requestFullscreen().catch(err => {
+                                console.error(`Erro ao entrar em tela cheia: ${err.message}`);
+                            });
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao renderizar o Mermaid:", error);
+            }
+        });
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 p-8 font-sans min-h-screen">
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        
+        <header class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-bold text-slate-900">Arquitetura de Datalake Agnóstica - CISC Belém</h1>
+            <p class="text-slate-600 mt-2 text-lg">Visão macro do servidor atuando como núcleo centralizador. O DEVS é a fonte primária tratada internamente, mas a arquitetura é escalável para a ingestão contínua de múltiplos parceiros climáticos e científicos.</p>
+        </header>
+
+        <div id="panzoom-container" class="relative bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex justify-center" style="height: 700px;">
+            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-md border border-slate-200">
+                <button id="zoom-in" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Aumentar Zoom">+</button>
+                <button id="zoom-out" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Diminuir Zoom">-</button>
+                <button id="zoom-reset" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold transition-colors" title="Resetar Zoom">1:1</button>
+                <button id="fullscreen" class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded text-xs font-bold transition-colors" title="Tela Cheia">⛶</button>
+            </div>
+            
+            <div class="absolute bottom-4 left-4 z-10 text-xs text-slate-600 bg-white/90 px-3 py-2 rounded-lg shadow-md border border-slate-200 pointer-events-none">
+                💡 <b>Dica:</b> Use o scroll ou pinça para dar zoom. Clique e arraste para mover.
+            </div>
+
+            <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+flowchart TD
+    classDef devs fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#7f1d1d;
+    classDef external fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px,color:#0c4a6e;
+    classDef orchestrator fill:#fef08a,stroke:#ca8a04,stroke-width:2px,color:#713f12,stroke-dasharray: 5 5;
+    classDef engine fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f;
+    classDef storage fill:#f3e8ff,stroke:#a855f7,stroke-width:2px,color:#4c1d95;
+    classDef bi fill:#ccfbf1,stroke:#14b8a6,stroke-width:2px,color:#134e4a;
+
+    subgraph MAESTRO ["👑 Camada de Orquestração do Servidor"]
+        O1["🌪️ Apache Airflow<br>(Monitoramento agnóstico, gestão de falhas e agendamento de DAGs)"]:::orchestrator
+    end
+
+    subgraph FONTES ["Camada de Ingestão: Fontes Múltiplas"]
+        direction LR
+        subgraph F_DEVS ["DEVS (Fonte Interna)"]
+            A1["Formulários Físicos<br>(OCR + Human in the Loop)"]:::devs
+            A2["Planilhas & Dados Locais"]:::devs
+            A3["Sistemas Legados<br>(SINAN, e-SUS)"]:::devs
+        end
+        
+        subgraph F_CLIMA ["Parceiros Climáticos"]
+            B1["INMET<br>(APIs Meteorológicas)"]:::external
+            B2["CEMADEN<br>(Alertas de Desastres)"]:::external
+        end
+        
+        subgraph F_CIENCIA ["Parceiros Científicos"]
+            C1["Fiocruz / InfoDengue<br>(Modelos Epidemiológicos)"]:::external
+            C2["DataSUS / OPAS"]:::external
+        end
+    end
+
+    subgraph LAKE ["Camada de Armazenamento Bruto (Raw Data)"]
+        D1[("🗄️ Datalake (MinIO / S3)<br>Repositório de tudo que entra: JSON, PDFs, CSVs originais")]:::storage
+    end
+
+    subgraph ETL ["Motor de Transformação e Padronização"]
+        direction TB
+        E1("⚙️ Workers Python<br>(Lógica de Extração e Integração)"):::engine
+        E2["Limpeza e Deduplicação"]:::engine
+        E3["Georreferenciamento<br>(Cruzamento Clima + CEP/Bairro)"]:::engine
+        
+        E1 --> E2 --> E3
+    end
+
+    subgraph DW ["Camada de Dados Estruturados"]
+        F1[("🐘 PostgreSQL / PostGIS<br>Banco Única Fonte de Verdade com suporte Geoespacial")]:::storage
+    end
+
+    subgraph INTELIGENCIA ["Camada do CISC (Consumo)"]
+        direction LR
+        G1["📊 Sala de Situação<br>(Metabase/Superset)"]:::bi
+        G2["🚨 Motor de Alertas<br>(Gatilhos de Saúde Pública)"]:::bi
+        G3["🗺️ Mapas de Calor e Vulnerabilidade"]:::bi
+    end
+
+    %% Fluxo de Dados
+    A1 -.-> D1
+    A2 -.-> D1
+    A3 -.-> D1
+    B1 -.-> D1
+    B2 -.-> D1
+    C1 -.-> D1
+    C2 -.-> D1
+
+    D1 ==>|Leitura de Dados Brutos| E1
+    E3 ==>|Escrita de Dados Validados e Cruzados| F1
+    
+    F1 --> G1
+    F1 --> G2
+    F1 --> G3
+
+    %% Orquestração
+    O1 -.->|Dispara Coletas Diárias| FONTES
+    O1 -.->|Aciona Pipelines| ETL
+            </pre>
+        </div>
+
+        <div class="mt-12 border-t pt-8">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">Detalhamento da Arquitetura: Do Dado Bruto à Inteligência</h2>
+            <p class="text-slate-600 mb-8">Compreenda a função exata de cada camada do servidor central e como elas se integram para entregar respostas rápidas e confiáveis à gestão pública.</p>
+            
+            <div class="space-y-6">
+                <!-- Orquestração -->
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-r-lg shadow-sm">
+                    <h3 class="text-lg font-bold text-amber-900 flex items-center gap-2">
+                        <span class="text-2xl">👑</span> Camada de Orquestração (O Maestro Invisível)
+                    </h3>
+                    <p class="mt-2 text-slate-700 leading-relaxed">
+                        O <strong>Apache Airflow</strong> não altera os dados, ele gerencia quem os altera. Funciona como o "maestro" do servidor, garantindo que as extrações do SINAN ou as leituras climáticas do INMET ocorram na hora exata, rotineiramente. Caso o portal do Ministério da Saúde falhe, o Airflow pausa o processo e tenta novamente mais tarde, enviando alertas automáticos para a equipe de TI antes que o problema chegue a afetar os painéis da Sala de Situação.
+                    </p>
+                </div>
+
+                <!-- Ingestão -->
+                <div class="bg-sky-50 border-l-4 border-sky-500 p-5 rounded-r-lg shadow-sm">
+                    <h3 class="text-lg font-bold text-sky-900 flex items-center gap-2">
+                        <span class="text-2xl">📥</span> Camada de Ingestão (A Porta de Entrada Universal)
+                    </h3>
+                    <p class="mt-2 text-slate-700 leading-relaxed">
+                        O servidor possui conexões agnósticas. Embora o <strong>DEVS</strong> seja o cliente originário (trazendo o desafio de digitalizar formulários físicos via Inteligência Artificial e validação humana integrada), a arquitetura trata essa entrada exatamente da mesma forma que tratará integrações via API com o <strong>CEMADEN</strong> (alertas de chuvas) ou <strong>Fiocruz</strong> (modelos preditivos). Qualquer novo parceiro pode ser plugado ao CISC no futuro sem a necessidade de reconstruir o servidor central.
+                    </p>
+                </div>
+
+                <!-- Datalake -->
+                <div class="bg-purple-50 border-l-4 border-purple-500 p-5 rounded-r-lg shadow-sm">
+                    <h3 class="text-lg font-bold text-purple-900 flex items-center gap-2">
+                        <span class="text-2xl">🗄️</span> Datalake (O Cofre Intocável)
+                    </h3>
+                    <p class="mt-2 text-slate-700 leading-relaxed">
+                        Tudo o que entra no servidor — seja uma foto de uma ficha de vistoria, uma planilha legada ou um arquivo meteorológico — é armazenado em sua forma original e inalterada. Este é o seguro de vida do CISC: se houver qualquer erro futuro na limpeza e cruzamento dos dados, o arquivo fonte original sempre estará protegido e disponível para auditoria e reprocessamento.
+                    </p>
+                </div>
+
+                <!-- ETL -->
+                <div class="bg-orange-50 border-l-4 border-orange-500 p-5 rounded-r-lg shadow-sm">
+                    <h3 class="text-lg font-bold text-orange-900 flex items-center gap-2">
+                        <span class="text-2xl">⚙️</span> Motor de Transformação (A Fábrica Analítica)
+                    </h3>
+                    <p class="mt-2 text-slate-700 leading-relaxed">
+                        Rotinas programadas em <strong>Python</strong> rodam nos bastidores para transformar o caos em ordem. Elas removem duplicações e padronizam nomenclaturas clínicas. Crucialmente, o servidor está preparado para hospedar <strong>modelos em R e Shiny</strong>, garantindo compatibilidade com os algoritmos epidemiológicos pesados desenvolvidos pela <strong>Fiocruz</strong> e institutos de pesquisa.
+                    </p>
+                </div>
+
+                <!-- DW -->
+                <div class="bg-emerald-50 border-l-4 border-emerald-500 p-5 rounded-r-lg shadow-sm">
+                    <h3 class="text-lg font-bold text-emerald-900 flex items-center gap-2">
+                        <span class="text-2xl">🐘</span> Data Warehouse (A Única Fonte da Verdade)
+                    </h3>
+                    <p class="mt-2 text-slate-700 leading-relaxed">
+                        Ao final da limpeza, apenas dados validados entram no banco <strong>PostgreSQL</strong>. Com a adoção da extensão <strong>PostGIS</strong>, o servidor adquire inteligência territorial nativa. O CISC deixa de ter tabelas passivas e passa a operar cálculos espaciais complexos, permitindo cruzar notificações de saúde com manchas de inundação ou zonas de vulnerabilidade climática em tempo real.
+                    </p>
+                </div>
+
+                <!-- Consumo -->
+                <div class="bg-teal-50 border-l-4 border-teal-500 p-5 rounded-r-lg shadow-sm">
+                    <h3 class="text-lg font-bold text-teal-900 flex items-center gap-2">
+                        <span class="text-2xl">📊</span> Camada de Consumo (O Palco da Decisão)
+                    </h3>
+                    <p class="mt-2 text-slate-700 leading-relaxed">
+                        A ponta final do ecossistema. Utilizamos o <strong>Apache Superset</strong> para análises profundas e controle de acesso granular, e o <strong>Metabase</strong> para consultas rápidas de gestores. Ambas as ferramentas permitem o <i>embedding</i> seguro de gráficos em portais externos, facilitando a criação de uma Sala de Situação que centraliza inteligência vinda de múltiplas agências.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitetura HITL - CISC Belém</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
+
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await mermaid.run({ querySelector: '.mermaid' });
+                const elem = document.querySelector('.mermaid svg');
+                const container = document.getElementById('panzoom-container');
+
+                if (elem) {
+                    elem.style.maxWidth = 'none';
+                    elem.style.height = '100%';
+                    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 0.3, step: 0.3 });
+
+                    container.addEventListener('wheel', panzoom.zoomWithWheel);
+                    document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+                    document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+                    document.getElementById('zoom-reset').addEventListener('click', panzoom.reset);
+                    document.getElementById('fullscreen').addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            container.requestFullscreen().catch(err => {
+                                console.error(`Erro ao entrar em tela cheia: ${err.message}`);
+                            });
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao renderizar o Mermaid:", error);
+            }
+        });
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 p-8 font-sans min-h-screen">
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        
+        <header class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-bold text-slate-900">Arquitetura Lógica: Human-in-the-Loop (HITL)</h1>
+            <p class="text-slate-600 mt-2 text-lg">Ideação do motor de inteligência que orquestra a colaboração entre a IA e o revisor humano do DEVS. Foco na precisão cirúrgica e no aprendizado contínuo.</p>
+        </header>
+
+        <div id="panzoom-container" class="relative bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex justify-center" style="height: 700px;">
+            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-md border border-slate-200">
+                <button id="zoom-in" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Aumentar Zoom">+</button>
+                <button id="zoom-out" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Diminuir Zoom">-</button>
+                <button id="zoom-reset" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold transition-colors" title="Resetar Zoom">1:1</button>
+                <button id="fullscreen" class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded text-xs font-bold transition-colors" title="Tela Cheia">⛶</button>
+            </div>
+            
+            <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+flowchart TD
+    %% Estilos
+    classDef ai fill:#fef3c7,stroke:#f59e0b,stroke-width:2px;
+    classDef human fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
+    classDef storage fill:#f3e8ff,stroke:#a855f7,stroke-width:2px;
+    classDef logic fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
+    classDef cloud fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,stroke-dasharray: 5 5;
+
+    Input["📂 Documentos do DEVS<br>(Fichas Digitalizadas)"]:::logic
+
+    subgraph ENGINE ["🤖 Inteligência de Triagem (Confidence Engine)"]
+        OCR["Extração por IA<br>(API ou Modelo Local)"]:::ai
+        Score{"Confiança <br>por Campo?"}:::ai
+    end
+
+    subgraph PATHS ["Caminhos de Processamento"]
+        Fast["🚀 Caminho Expresso<br>(Automação Total)"]:::logic
+        Surgical["🩺 Revisão Cirúrgica<br>(Intervenção Humana)"]:::human
+    end
+
+    subgraph REVIEW ["🖥️ Interface de Auditoria"]
+        Show["Exibir apenas<br>campos duvidosos"]:::logic
+        Edit["Correção pelo<br>Servidor do DEVS"]:::human
+    end
+
+    subgraph BUCKET ["🧠 O Ativo de Inteligência (Training Bucket)"]
+        S2[("📦 Banco de Exemplos<br>(Imagem + Correção)")]:::storage
+        
+        FineTune["☁️ Fine-tuning via API<br>(Melhoria na Nuvem)"]:::cloud
+        Soberania["🏠 Modelo Local<br>(Independência e Sigilo)"]:::logic
+    end
+
+    Result[("🐘 Banco PostGIS<br>(Pronto para a Sala de Situação)")]:::storage
+
+    %% Fluxo Didático
+    Input --> OCR --> Score
+    
+    Score -->|Acima de 90%| Fast
+    Score -->|Abaixo de 90%| Surgical
+    
+    Surgical --> Show --> Edit
+    
+    Fast --> Result
+    Edit --> Result
+
+    %% Ciclo de Aprendizado (O Diferencial)
+    Edit -.->|Captura de Erro/Acerto| S2
+    S2 -.-> FineTune
+    S2 -.-> Soberania
+    FineTune -.->|Retreina API| OCR
+    Soberania -.->|Evolui Modelo Interno| OCR
+
+    %% Legenda
+    subgraph LEGENDA ["Fluxo de Valor"]
+        direction LR
+        L1["Lógica Automatizada"]:::ai
+        L2["Ação Humana"]:::human
+        L3["Fase Experimental/Nuvem"]:::cloud
+    end
+            </pre>
+        </div>
+
+        <div class="mt-12 border-t pt-8">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6">Conceitos de Ideação: O Ciclo de Valor do HITL</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-6">
+                    <div class="bg-amber-50 p-6 rounded-xl border border-amber-200">
+                        <h3 class="font-bold text-amber-900 mb-2">Triagem Inteligente (Confidence Engine)</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            O sistema não é binário. Ele avalia a incerteza de cada caractere. O "Caminho Expresso" garante que o servidor não perca tempo com o que já está óbvio, enquanto a "Revisão Cirúrgica" garante que nenhum erro passe para a base final.
+                        </p>
+                    </div>
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                        <h3 class="font-bold text-blue-900 mb-2">Dualidade do Training Bucket (API vs Soberania)</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            Trabalhar com APIs (Google/Azure) permite agilidade imediata. O <i>Training Bucket</i> alimenta o **Fine-tuning** dessas APIs para que elas aprendam a letra dos médicos de Belém. Ao mesmo tempo, ele constrói a base necessária para o **Modelo Local**, permitindo que o CISC se torne independente da nuvem se as regras de sigilo ou custos assim exigirem.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <div class="bg-green-50 p-6 rounded-xl border border-green-200">
+                        <h3 class="font-bold text-green-900 mb-2">Feedback Loop (O Sistema que Aprende)</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            Cada correção feita pelo servidor do DEVS é um dado rotulado de altíssimo valor. O sistema usa esses exemplos para "estudar". Com o passar dos meses, a necessidade de intervenção humana diminui naturalmente à medida que o motor de IA se torna um especialista nas fichas locais.
+                        </p>
+                    </div>
+                    <div class="bg-purple-50 p-6 rounded-xl border border-purple-200">
+                        <h3 class="font-bold text-purple-900 mb-2">Auditabilidade e Segurança Territorial</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed">
+                            O resultado final no PostGIS carrega não apenas o dado clínico, mas o rastro de quem o validou. Isso cria uma base sólida para a <b>Sala de Situação</b>, onde as decisões de saúde pública são baseadas em dados com 100% de confiabilidade e origem comprovada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

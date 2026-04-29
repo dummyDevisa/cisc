@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modelagem de IA e HTR - CISC Belém</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
+
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await mermaid.run({ querySelector: '.mermaid' });
+                const elem = document.querySelector('.mermaid svg');
+                const container = document.getElementById('panzoom-container');
+
+                if (elem) {
+                    elem.style.maxWidth = 'none';
+                    elem.style.height = '100%';
+                    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 0.3, step: 0.3 });
+
+                    container.addEventListener('wheel', panzoom.zoomWithWheel);
+                    document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+                    document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+                    document.getElementById('zoom-reset').addEventListener('click', panzoom.reset);
+                    document.getElementById('fullscreen').addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            container.requestFullscreen().catch(err => {
+                                console.error(`Erro ao entrar em tela cheia: ${err.message}`);
+                            });
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao renderizar o Mermaid:", error);
+            }
+        });
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 p-8 font-sans min-h-screen">
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8">
+        
+        <header class="mb-8 border-b pb-4">
+            <h1 class="text-3xl font-bold text-slate-900">Estratégia de IA: Reconhecimento de Manuscritos (HTR)</h1>
+            <p class="text-slate-600 mt-2 text-lg">Definição técnica para implementação de modelos de visão e linguagem (VLMs) com aprendizado contínuo em hardware local (Soberania de Dados).</p>
+        </header>
+
+        <!-- Diagrama do Pipeline de IA -->
+        <div id="panzoom-container" class="relative bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex justify-center mb-10" style="height: 550px;">
+            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-md border border-slate-200">
+                <button id="zoom-in" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Aumentar Zoom">+</button>
+                <button id="zoom-out" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Diminuir Zoom">-</button>
+                <button id="zoom-reset" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold transition-colors" title="Resetar Zoom">1:1</button>
+                <button id="fullscreen" class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded text-xs font-bold transition-colors" title="Tela Cheia">⛶</button>
+            </div>
+            
+            <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+flowchart TD
+    %% Estilos
+    classDef model fill:#e0e7ff,stroke:#6366f1,stroke-width:2px;
+    classDef process fill:#f8fafc,stroke:#94a3b8,stroke-width:1px;
+    classDef action fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
+    classDef fallback fill:#fee2e2,stroke:#dc2626,stroke-width:2px;
+
+    Input["📂 Imagem da Ficha"]:::process
+
+    subgraph ROUTER ["🧠 Roteador de Carga"]
+        HW_Check{"Hardware <br>Local <br>Suficiente?"}:::process
+        Local_M["Florence-2 / PaliGemma 2<br>(Processamento Local)"]:::model
+        API_M["Cloud API Fallback<br>(Google / Azure / OpenAI)"]:::fallback
+    end
+
+    subgraph TRIAGEM ["Validação de Confiança"]
+        Score{"Score > 90%?"}:::process
+        HITL["🖥️ Revisão Humana (DEVS)"]:::action
+    end
+
+    subgraph ASSET ["👑 O Maior Ativo: Universal Training Bucket"]
+        Bucket[("📦 Dataset Agnóstico<br>(JSONL + Imagens)")]:::process
+    end
+
+    subgraph TRAINING ["Re-treinamento e Portabilidade"]
+        QLoRA["⚙️ Fine-tuning QLoRA<br>(Modelo A)"]:::model
+        Swap["🔄 Troca de Modelo<br>(Modelo B)"]:::model
+    end
+
+    Input --> HW_Check
+    HW_Check -->|Sim| Local_M
+    HW_Check -->|Não / Carga Alta| API_M
+
+    Local_M --> Score
+    API_M --> Score
+
+    Score -->|Não| HITL
+    HITL --> Bucket
+    
+    Bucket --> QLoRA
+    Bucket --> Swap
+    
+    QLoRA -.->|Melhora| Local_M
+    Swap -.->|Substitui| Local_M
+            </pre>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Coluna 1: Modelos -->
+            <div class="lg:col-span-2 space-y-6">
+                <h2 class="text-xl font-bold text-slate-900">1. Portabilidade: Independência de Modelo</h2>
+                <div class="p-5 bg-blue-50 border border-blue-200 rounded-xl">
+                    <p class="text-sm text-blue-900 leading-relaxed">
+                        <b>O "Segredo" da Longevidade:</b> Pesos de modelos de IA são voláteis, mas o <b>Dataset é eterno</b>. Se decidirmos trocar o PaliGemma pelo Florence (ou por um modelo que ainda nem foi lançado), o "background de treinamento" não é perdido. O <i>Universal Training Bucket</i> (nosso dataset agnóstico) é usado para re-executar o script de fine-tuning no novo modelo, transferindo todo o conhecimento acumulado pelos revisores humanos para a nova arquitetura em poucas horas.
+                    </p>
+                </div>
+
+                <h2 class="text-xl font-bold text-slate-900 pt-4">2. Estratégia Híbrida e Resiliência</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                        <h4 class="font-bold text-red-900 mb-2">Cloud API Fallback</h4>
+                        <p class="text-xs text-red-800 leading-relaxed">Caso o volume de fichas supere a capacidade da GPU local ou o hardware sofra uma falha, o sistema roteia automaticamente a demanda para APIs externas. A inteligência do CISC não para.</p>
+                    </div>
+                    <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <h4 class="font-bold text-slate-900 mb-2">Treino Híbrido</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed">O <i>Training Bucket</i> captura dados tanto do fluxo local quanto do fluxo via API. Isso garante que, mesmo usando a nuvem temporariamente, o nosso modelo local continue aprendendo e se preparando para retomar a soberania total.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coluna 2: Hardware -->
+            <div class="space-y-6">
+                <h2 class="text-xl font-bold text-slate-900">3. Requisitos de Hardware</h2>
+                <div class="p-5 bg-orange-50 border border-orange-200 rounded-xl">
+                    <h4 class="text-orange-900 font-bold mb-3 flex items-center gap-2">
+                        <span class="p-1 bg-orange-200 rounded">📟</span> Recomendado (2026)
+                    </h4>
+                    <ul class="text-sm space-y-3 text-orange-800">
+                        <li><b>GPU:</b> NVIDIA RTX 4070 Ti Super (16GB VRAM)</li>
+                        <li><b>VRAM:</b> Uso de <i>bitsandbytes (NF4)</i> para liberar espaço aos gradientes de treino.</li>
+                        <li><b>RAM:</b> 32GB DDR5</li>
+                        <li><b>Armazenamento:</b> NVMe Gen4 (Leitura rápida do Bucket).</li>
+                        <li><b>NPU:</b> Uso da NPU local para pré-processamento de imagem.</li>
+                    </ul>
+                </div>
+
+                <div class="p-5 bg-indigo-50 border border-indigo-200 rounded-xl">
+                    <h4 class="text-indigo-900 font-bold mb-3 flex items-center gap-2">
+                        <span class="p-1 bg-indigo-200 rounded">💡</span> Dica de Implementação
+                    </h4>
+                    <p class="text-xs text-indigo-800 leading-relaxed italic">
+                        "Para o início da operação, se o dataset for escasso, utilizaremos o modelo para gerar <b>Dados Sintéticos</b> baseados nos templates das fichas da SESMA, acelerando o 'aquecimento' do fine-tuning antes do primeiro grande lote de HITL."
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10 p-6 bg-slate-900 text-slate-300 rounded-xl">
+            <h3 class="text-white font-bold mb-2">Perguntas para a Próxima Fase</h3>
+            <p class="text-sm">Já possuímos um dataset inicial dessas fichas ou o projeto começará a coleta do zero através do fluxo HITL? A resposta definirá se iniciaremos com Transfer Learning ou Dados Sintéticos.</p>
+        </div>
+    </div>
+</body>
+</html>
