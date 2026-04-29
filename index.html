@@ -47,8 +47,8 @@
     <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-8">
         
         <header class="mb-8 border-b pb-4">
-            <h1 class="text-3xl font-bold text-slate-900">Arquitetura de Inteligência em Saúde (Data Warehouse)</h1>
-            <p class="text-slate-600 mt-2 text-lg">Proposta de pipeline de ETL para centralização de dados do DEVS - SESMA Belém, lidando com entradas mistas (papel, planilhas e sistemas legados) focada em agravos e monitoramento.</p>
+            <h1 class="text-3xl font-bold text-slate-900">Arquitetura de Inteligência em Saúde (Datalake)</h1>
+            <p class="text-slate-600 mt-2 text-lg">Proposta de pipeline de ETL orquestrado para centralização de dados do DEVS - SESMA Belém. Infraestrutura baseada em Docker, Python e Apache Airflow.</p>
         </header>
 
         <!-- Container do Mermaid -->
@@ -75,6 +75,11 @@ flowchart TD
     classDef human fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d;
     classDef db fill:#f3e8ff,stroke:#a855f7,stroke-width:2px,color:#4c1d95;
     classDef bi fill:#ccfbf1,stroke:#14b8a6,stroke-width:2px,color:#134e4a;
+    classDef orchestrator fill:#fef08a,stroke:#ca8a04,stroke-width:2px,color:#713f12,stroke-dasharray: 5 5;
+
+    subgraph ORQUESTRAÇÃO ["👑 Orquestração Geral (Docker)"]
+        O1["🌪️ Apache Airflow<br>(Mapeia DAGs, agenda tarefas, monitora logs e emite alertas)"]:::orchestrator
+    end
 
     subgraph FASE_1 ["FASE 1: Fontes de Dados (O Caos Atual)"]
         direction LR
@@ -89,8 +94,8 @@ flowchart TD
         B2["🤖 Processamento IA / OCR<br>(Extração Estruturada)"]:::process
         B3["👀 Human-in-the-Loop<br>(Revisão web de caligrafias)"]:::human
         
-        B4["Rotinas Backend de Coleta<br>(Workers em Go / n8n)"]:::process
-        B5["Integração API / Importador CSV"]:::process
+        B4["Rotinas Python (Workers)<br>(Leitura de Planilhas via Pandas)"]:::process
+        B5["Integração API / Web Scraping<br>(Scripts Python em background)"]:::process
         
         A1 --> B1 --> B2
         B2 -->|Score menor que 90%| B3
@@ -101,7 +106,7 @@ flowchart TD
 
     subgraph FASE_3 ["FASE 3: Motor de Transformação (Transform)"]
         direction TB
-        C1("⚙️ Pipeline de ETL Central"):::process
+        C1("⚙️ Pipeline Central de ETL<br>(Scripts Python disparados pelo Airflow)"):::process
         C2["🧹 Limpeza de Dados<br>(Deduplicação, remoção de nulos)"]:::process
         C3["📍 Padronização Geográfica<br>(Validação de CEPs e Bairros)"]:::process
         C4["🔒 Regras de Negócio e Máscaras<br>(Validação de CPF/CNS/CID)"]:::process
@@ -117,11 +122,11 @@ flowchart TD
     subgraph FASE_4 ["FASE 4: Armazenamento (Load)"]
         direction LR
         D1[("🗄️ Bucket S3 (Raw Data)<br>Imagens de PDFs e CSVs originais")]:::db
-        D2[("🐘 PostgreSQL (Datalake)<br>Banco Único e Fonte de Verdade")]:::db
+        D2[("🐘 PostgreSQL (Datalake/Data Warehouse)<br>Banco Único e Fonte de Verdade")]:::db
         
         B1 -.->|Backup PDF| D1
         B5 -.->|Backup CSV| D1
-        C4 ==>|Carga Limpa| D2
+        C4 ==>|Carga Limpa via SQLAlchemy/Psycopg2| D2
     end
 
     subgraph FASE_5 ["FASE 5: Consumo e Inteligência (BI)"]
@@ -134,17 +139,22 @@ flowchart TD
         D2 --> E2
         D2 --> E3
     end
+
+    %% Conexões de Orquestração do Airflow (Setas tracejadas)
+    O1 -.->|Agenda e Dispara Tarefas| B4
+    O1 -.->|Controla Retentativas| B5
+    O1 -.->|Orquestra Fluxos de Limpeza| C1
             </pre>
         </div>
 
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-700">
-            <div class="bg-red-50 p-4 rounded-lg border border-red-100">
-                <h3 class="font-bold text-red-800 mb-2">O Problema Resolvido</h3>
-                <p>O fluxo ignora a necessidade de colocar um tablet na mão de cada agente de saúde ou enfermeiro da ponta agora. Ele aceita as fichas de notificação em papel (Fase 1), mas usa IA para automatizar a leitura, deixando para o humano (HITL) apenas a correção de garranchos que a máquina não entendeu.</p>
+            <div class="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                <h3 class="font-bold text-amber-800 mb-2">A Mágica do Airflow</h3>
+                <p>O Apache Airflow não altera os dados diretamente, ele <b>gerencia quem altera</b>. Ele garante que as rotinas Python (Workers) da Fase 2 rodem no horário certo. Se o sistema do Ministério da Saúde falhar na Fase 2, o Airflow segura a Fase 3 e tenta de novo, enviando um alerta caso não consiga.</p>
             </div>
-            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
-                <h3 class="font-bold text-purple-800 mb-2">A Solução Robusta</h3>
-                <p>Todos os dados, não importa a origem (SINAN, GAL ou Papel), passam por um funil de limpeza (Fase 3). Nomes de bairros são padronizados para o mapa de Belém e dados vitais (CPFs, Cartão SUS e códigos CID de doenças) são validados antes de tocarem no banco de dados definitivo (Datalake).</p>
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 class="font-bold text-blue-800 mb-2">Stack 100% Código Aberto</h3>
+                <p>Todo este ecossistema pode ser "conteinerizado" via <b>Docker</b>. Um container roda o PostgreSQL, outro roda os serviços do Airflow, e as rotinas (DAGs) são escritas de forma nativa em <b>Python</b>, garantindo altíssimo controle, flexibilidade e baixo custo a longo prazo para a gestão municipal.</p>
             </div>
         </div>
 
