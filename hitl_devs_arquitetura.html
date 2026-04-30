@@ -4,12 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arquitetura HITL - CISC Belém</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
         import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
 
-        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+        mermaid.initialize({ 
+            startOnLoad: false, 
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00d2ff',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#3a7bd5',
+                lineColor: '#94a3b8',
+                secondaryColor: '#3a7bd5',
+                tertiaryColor: '#0a0e14'
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -41,31 +61,149 @@
             }
         });
     </script>
-</head>
-<body class="bg-slate-50 text-slate-800 p-8 font-sans min-h-screen">
-    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8">
-        
-        <header class="mb-8 border-b pb-4">
-            <h1 class="text-3xl font-bold text-slate-900">Arquitetura Lógica: Human-in-the-Loop (HITL)</h1>
-            <p class="text-slate-600 mt-2 text-lg">Ideação do motor de inteligência que orquestra a colaboração entre a IA e o revisor humano do DEVS. Foco na precisão cirúrgica e no aprendizado contínuo.</p>
-        </header>
 
-        <div id="panzoom-container" class="relative bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex justify-center" style="height: 700px;">
-            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-md border border-slate-200">
-                <button id="zoom-in" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Aumentar Zoom">+</button>
-                <button id="zoom-out" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Diminuir Zoom">-</button>
-                <button id="zoom-reset" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold transition-colors" title="Resetar Zoom">1:1</button>
-                <button id="fullscreen" class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded text-xs font-bold transition-colors" title="Tela Cheia">⛶</button>
-            </div>
-            
-            <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --accent: #ff007a;
+            --bg-dark: #0a0e14;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.8);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 122, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .bg-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4;
+            background: linear-gradient(90deg, var(--bg-dark) 20px, transparent 1%) center, linear-gradient(var(--bg-dark) 20px, transparent 1%) center, rgba(255, 255, 255, 0.05);
+            background-size: 22px 22px;
+        }
+
+        header.site-header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i { -webkit-text-fill-color: var(--primary); }
+
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links a:hover { color: var(--primary); }
+
+        .content-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+
+        footer.site-footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .zoom-controls {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border: 1px solid var(--border) !important;
+        }
+        .zoom-controls button {
+            color: white !important;
+            background: rgba(255,255,255,0.05) !important;
+        }
+        .zoom-controls button:hover {
+            background: var(--primary) !important;
+            color: var(--bg-dark) !important;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="bg-mesh"></div>
+
+    <header class="site-header">
+        <div class="logo">
+            <i class="fas fa-microchip"></i>
+            <span>CISC BELÉM</span>
+        </div>
+        <nav class="nav-links">
+            <a href="index.html"><i class="fas fa-home"></i> Início</a>
+            <a href="etl_arquitetura.html"><i class="fas fa-project-diagram"></i> Arquitetura</a>
+            <a href="devs_etl_detalhado.html"><i class="fas fa-stream"></i> Pipeline</a>
+            <a href="hitl_devs_arquitetura.html" style="color: var(--primary);"><i class="fas fa-brain"></i> HITL</a>
+            <a href="cisc_ia_modelagem.html"><i class="fas fa-robot"></i> IA/HTR</a>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-8">
+        <div class="content-card rounded-2xl p-8 mb-8">
+            <header class="mb-8 border-b border-white/10 pb-4">
+                <h1 class="text-4xl font-bold text-white">Arquitetura Lógica: Human-in-the-Loop (HITL)</h1>
+                <p class="text-slate-400 mt-2 text-lg">Ideação do motor de inteligência que orquestra a colaboração entre a IA e o revisor humano do DEVS. Foco na precisão cirúrgica e no aprendizado contínuo.</p>
+            </header>
+
+            <div id="panzoom-container" class="relative bg-black/20 border border-white/10 rounded-xl overflow-hidden flex justify-center" style="height: 700px;">
+                <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 zoom-controls p-2 rounded-lg shadow-xl">
+                    <button id="zoom-in" class="w-8 h-8 rounded font-bold transition-all" title="Aumentar Zoom">+</button>
+                    <button id="zoom-out" class="w-8 h-8 rounded font-bold transition-all" title="Diminuir Zoom">-</button>
+                    <button id="zoom-reset" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Resetar Zoom">1:1</button>
+                    <button id="fullscreen" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Tela Cheia">⛶</button>
+                </div>
+                
+                <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
 flowchart TD
     %% Estilos
-    classDef ai fill:#fef3c7,stroke:#f59e0b,stroke-width:2px;
-    classDef human fill:#dcfce7,stroke:#22c55e,stroke-width:2px;
-    classDef storage fill:#f3e8ff,stroke:#a855f7,stroke-width:2px;
-    classDef logic fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px;
-    classDef cloud fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef ai fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+    classDef human fill:#064e3b,stroke:#22c55e,stroke-width:2px,color:#d1fae5;
+    classDef storage fill:#2e1065,stroke:#a855f7,stroke-width:2px,color:#f3e8ff;
+    classDef logic fill:#082f49,stroke:#0ea5e9,stroke-width:2px,color:#e0f2fe;
+    classDef cloud fill:#1e293b,stroke:#94a3b8,stroke-width:2px,stroke-dasharray: 5 5,color:#cbd5e1;
 
     Input["📂 Documentos do DEVS<br>(Fichas Digitalizadas)"]:::logic
 
@@ -118,44 +256,49 @@ flowchart TD
         L2["Ação Humana"]:::human
         L3["Fase Experimental/Nuvem"]:::cloud
     end
-            </pre>
-        </div>
+                </pre>
+            </div>
 
-        <div class="mt-12 border-t pt-8">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">Conceitos de Ideação: O Ciclo de Valor do HITL</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="space-y-6">
-                    <div class="bg-amber-50 p-6 rounded-xl border border-amber-200">
-                        <h3 class="font-bold text-amber-900 mb-2">Triagem Inteligente (Confidence Engine)</h3>
-                        <p class="text-sm text-slate-700 leading-relaxed">
-                            O sistema não é binário. Ele avalia a incerteza de cada caractere. O "Caminho Expresso" garante que o servidor não perca tempo com o que já está óbvio, enquanto a "Revisão Cirúrgica" garante que nenhum erro passe para a base final.
-                        </p>
+            <div class="mt-12 border-t border-white/10 pt-8">
+                <h2 class="text-3xl font-bold text-white mb-6">Conceitos de Ideação: O Ciclo de Valor do HITL</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-amber-400 mb-2">Triagem Inteligente (Confidence Engine)</h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                O sistema avalia a incerteza de cada caractere. O "Caminho Expresso" automatiza o que é óbvio, enquanto a "Revisão Cirúrgica" foca o servidor do DEVS onde realmente há dúvida.
+                            </p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-sky-400 mb-2">Dualidade do Training Bucket</h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                Trabalhar com APIs permite agilidade inicial via Fine-tuning. Simultaneamente, o <i>Training Bucket</i> constrói a base para um <b>Modelo Local</b> soberano, garantindo independência futura.
+                            </p>
+                        </div>
                     </div>
-                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
-                        <h3 class="font-bold text-blue-900 mb-2">Dualidade do Training Bucket (API vs Soberania)</h3>
-                        <p class="text-sm text-slate-700 leading-relaxed">
-                            Trabalhar com APIs (Google/Azure) permite agilidade imediata. O <i>Training Bucket</i> alimenta o **Fine-tuning** dessas APIs para que elas aprendam a letra dos médicos de Belém. Ao mesmo tempo, ele constrói a base necessária para o **Modelo Local**, permitindo que o CISC se torne independente da nuvem se as regras de sigilo ou custos assim exigirem.
-                        </p>
-                    </div>
-                </div>
 
-                <div class="space-y-6">
-                    <div class="bg-green-50 p-6 rounded-xl border border-green-200">
-                        <h3 class="font-bold text-green-900 mb-2">Feedback Loop (O Sistema que Aprende)</h3>
-                        <p class="text-sm text-slate-700 leading-relaxed">
-                            Cada correção feita pelo servidor do DEVS é um dado rotulado de altíssimo valor. O sistema usa esses exemplos para "estudar". Com o passar dos meses, a necessidade de intervenção humana diminui naturalmente à medida que o motor de IA se torna um especialista nas fichas locais.
-                        </p>
-                    </div>
-                    <div class="bg-purple-50 p-6 rounded-xl border border-purple-200">
-                        <h3 class="font-bold text-purple-900 mb-2">Auditabilidade e Segurança Territorial</h3>
-                        <p class="text-sm text-slate-700 leading-relaxed">
-                            O resultado final no PostGIS carrega não apenas o dado clínico, mas o rastro de quem o validou. Isso cria uma base sólida para a <b>Sala de Situação</b>, onde as decisões de saúde pública são baseadas em dados com 100% de confiabilidade e origem comprovada.
-                        </p>
+                    <div class="space-y-6">
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-green-400 mb-2">Feedback Loop (Aprendizado)</h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                Cada correção manual é um dado rotulado precioso. O sistema "estuda" esses exemplos, diminuindo a necessidade de intervenção humana conforme se especializa nas fichas locais.
+                            </p>
+                        </div>
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-purple-400 mb-2">Auditabilidade e Segurança</h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                O dado no PostGIS carrega o rastro de validação. Isso garante que as decisões da <b>Sala de Situação</b> sejam baseadas em informações com 100% de confiabilidade comprovada.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Centro de Informação em Saúde e Clima (CISC) — Belém/PA</p>
+    </footer>
 </body>
 </html>

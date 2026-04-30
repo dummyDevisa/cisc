@@ -4,12 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ETL Detalhado DEVS - CISC Belém</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module">
         import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
         import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
 
-        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+        mermaid.initialize({ 
+            startOnLoad: false, 
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00d2ff',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#3a7bd5',
+                lineColor: '#94a3b8',
+                secondaryColor: '#3a7bd5',
+                tertiaryColor: '#0a0e14'
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', async () => {
             try {
@@ -41,31 +61,149 @@
             }
         });
     </script>
-</head>
-<body class="bg-slate-50 text-slate-800 p-8 font-sans min-h-screen">
-    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg p-8">
-        
-        <header class="mb-8 border-b pb-4">
-            <h1 class="text-3xl font-bold text-slate-900">Pipeline de ETL Detalhado: Operação DEVS Belém</h1>
-            <p class="text-slate-600 mt-2 text-lg">Aprofundamento técnico do fluxo de tratamento de dados internos da Vigilância em Saúde. Este é o processo que transforma o caos do papel em inteligência para o servidor central do CISC.</p>
-        </header>
 
-        <div id="panzoom-container" class="relative bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex justify-center" style="height: 650px;">
-            <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 bg-white/90 p-2 rounded-lg shadow-md border border-slate-200">
-                <button id="zoom-in" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Aumentar Zoom">+</button>
-                <button id="zoom-out" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded font-bold transition-colors" title="Diminuir Zoom">-</button>
-                <button id="zoom-reset" class="w-8 h-8 bg-slate-100 hover:bg-slate-200 rounded text-xs font-bold transition-colors" title="Resetar Zoom">1:1</button>
-                <button id="fullscreen" class="w-8 h-8 bg-indigo-100 hover:bg-indigo-200 rounded text-xs font-bold transition-colors" title="Tela Cheia">⛶</button>
-            </div>
-            
-            <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --accent: #ff007a;
+            --bg-dark: #0a0e14;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.8);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 122, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .bg-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4;
+            background: linear-gradient(90deg, var(--bg-dark) 20px, transparent 1%) center, linear-gradient(var(--bg-dark) 20px, transparent 1%) center, rgba(255, 255, 255, 0.05);
+            background-size: 22px 22px;
+        }
+
+        header.site-header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i { -webkit-text-fill-color: var(--primary); }
+
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-links a:hover { color: var(--primary); }
+
+        .content-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+
+        footer.site-footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .zoom-controls {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border: 1px solid var(--border) !important;
+        }
+        .zoom-controls button {
+            color: white !important;
+            background: rgba(255,255,255,0.05) !important;
+        }
+        .zoom-controls button:hover {
+            background: var(--primary) !important;
+            color: var(--bg-dark) !important;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="bg-mesh"></div>
+
+    <header class="site-header">
+        <div class="logo">
+            <i class="fas fa-microchip"></i>
+            <span>CISC BELÉM</span>
+        </div>
+        <nav class="nav-links">
+            <a href="index.html"><i class="fas fa-home"></i> Início</a>
+            <a href="etl_arquitetura.html"><i class="fas fa-project-diagram"></i> Arquitetura</a>
+            <a href="devs_etl_detalhado.html" style="color: var(--primary);"><i class="fas fa-stream"></i> Pipeline</a>
+            <a href="hitl_devs_arquitetura.html"><i class="fas fa-brain"></i> HITL</a>
+            <a href="cisc_ia_modelagem.html"><i class="fas fa-robot"></i> IA/HTR</a>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-8">
+        <div class="content-card rounded-2xl p-8 mb-8">
+            <header class="mb-8 border-b border-white/10 pb-4">
+                <h1 class="text-4xl font-bold text-white">Pipeline de ETL Detalhado: Operação DEVS Belém</h1>
+                <p class="text-slate-400 mt-2 text-lg">Aprofundamento técnico do fluxo de tratamento de dados internos da Vigilância em Saúde. Este é o processo que transforma o caos do papel em inteligência para o servidor central do CISC.</p>
+            </header>
+
+            <div id="panzoom-container" class="relative bg-black/20 border border-white/10 rounded-xl overflow-hidden flex justify-center" style="height: 650px;">
+                <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 zoom-controls p-2 rounded-lg shadow-xl">
+                    <button id="zoom-in" class="w-8 h-8 rounded font-bold transition-all" title="Aumentar Zoom">+</button>
+                    <button id="zoom-out" class="w-8 h-8 rounded font-bold transition-all" title="Diminuir Zoom">-</button>
+                    <button id="zoom-reset" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Resetar Zoom">1:1</button>
+                    <button id="fullscreen" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Tela Cheia">⛶</button>
+                </div>
+                
+                <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
 flowchart TD
     %% Estilos
-    classDef source fill:#fee2e2,stroke:#ef4444,stroke-width:2px,color:#7f1d1d;
-    classDef process fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f;
-    classDef review fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d;
-    classDef storage fill:#f3e8ff,stroke:#a855f7,stroke-width:2px,color:#4c1d95;
-    classDef destination fill:#e0f2fe,stroke:#0ea5e9,stroke-width:2px,color:#0c4a6e;
+    classDef source fill:#450a0a,stroke:#ef4444,stroke-width:2px,color:#fecaca;
+    classDef process fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+    classDef review fill:#064e3b,stroke:#22c55e,stroke-width:2px,color:#d1fae5;
+    classDef storage fill:#2e1065,stroke:#a855f7,stroke-width:2px,color:#f3e8ff;
+    classDef destination fill:#082f49,stroke:#0ea5e9,stroke-width:2px,color:#e0f2fe;
 
     subgraph F_INPUT ["1. Fontes de Dados (DEVS)"]
         A1["📄 Fichas de Notificação Manuais<br>(Epidemiológica / Ambiental)"]:::source
@@ -115,74 +253,79 @@ flowchart TD
     O["🌪️ Orquestrador Airflow"]
     O -.->|Trigger| B2
     O -.->|Trigger| D1
-            </pre>
-        </div>
+                </pre>
+            </div>
 
-        <div class="mt-12 border-t pt-8">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6">Detalhamento Técnico do Processo</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Coluna 1 -->
-                <div class="space-y-8">
-                    <div>
-                        <h3 class="text-lg font-bold text-red-800 flex items-center gap-2 mb-3">
-                            <span class="p-1.5 bg-red-100 rounded-lg">📄</span> 1. Ingestão do Caos
-                        </h3>
-                        <p class="text-slate-700 leading-relaxed text-sm">
-                            O processo começa onde a saúde pública realmente acontece: no papel. Fichas de notificação e planilhas avulsas são coletadas. O desafio aqui é a <b>variabilidade</b> de formatos e a qualidade da caligrafia.
-                        </p>
+            <div class="mt-12 border-t border-white/10 pt-8">
+                <h2 class="text-3xl font-bold text-white mb-6">Detalhamento Técnico do Processo</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Coluna 1 -->
+                    <div class="space-y-8">
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-red-400 flex items-center gap-2 mb-3">
+                                <span class="text-2xl">📄</span> 1. Ingestão do Caos
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                O processo começa onde a saúde pública realmente acontece: no papel. Fichas de notificação e planilhas avulsas são coletadas. O desafio aqui é a <b>variabilidade</b> de formatos e a qualidade da caligrafia.
+                            </p>
+                        </div>
+
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-amber-400 flex items-center gap-2 mb-3">
+                                <span class="text-2xl">🤖</span> 2. Visão Computacional
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                As imagens são processadas por redes neurais que analisam cada <b>campo individualmente</b>. Em vez de uma nota global, a IA atribui um <b>Índice de Confiança por célula</b>, isolando incertezas.
+                            </p>
+                        </div>
+
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-green-400 flex items-center gap-2 mb-3">
+                                <span class="text-2xl">👀</span> 3. Revisão Cirúrgica (HITL)
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                O sistema destaca <b>apenas os campos duvidosos</b> para o revisor humano. A validação é cirúrgica, reduzindo drasticamente o tempo de processamento manual.
+                            </p>
+                        </div>
                     </div>
 
-                    <div>
-                        <h3 class="text-lg font-bold text-amber-800 flex items-center gap-2 mb-3">
-                            <span class="p-1.5 bg-amber-100 rounded-lg">🤖</span> 2. Visão Computacional
-                        </h3>
-                        <p class="text-slate-700 leading-relaxed text-sm">
-                            As imagens são processadas por redes neurais que analisam cada <b>campo individualmente</b> (nome, data, CID, endereço). Em vez de uma nota para o papel todo, a IA atribui um <b>Índice de Confiança por célula</b>, isolando incertezas de forma granular.
-                        </p>
-                    </div>
+                    <!-- Coluna 2 -->
+                    <div class="space-y-8">
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-indigo-400 flex items-center gap-2 mb-3">
+                                <span class="text-2xl">⚙️</span> 4. Refinaria de Dados
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                Com os dados digitais, o pipeline executa <b>deduplicação</b> e validação cruzada com bases oficiais (Receita/Cartão SUS) usando scripts Python de alto desempenho.
+                            </p>
+                        </div>
 
-                    <div>
-                        <h3 class="text-lg font-bold text-green-800 flex items-center gap-2 mb-3">
-                            <span class="p-1.5 bg-green-100 rounded-lg">👀</span> 3. Revisão Cirúrgica (HITL)
-                        </h3>
-                        <p class="text-slate-700 leading-relaxed text-sm">
-                            A interface de revisão não exige a releitura do documento completo. O sistema destaca <b>apenas os campos duvidosos</b> para o servidor do DEVS. O humano atua de forma cirúrgica, validando apenas as células onde a máquina sinalizou baixa confiança, o que reduz drasticamente o tempo de processamento.
-                        </p>
-                    </div>
-                </div>
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-purple-400 flex items-center gap-2 mb-3">
+                                <span class="text-2xl">📍</span> 5. Normalização Geográfica
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                Nomes de ruas e bairros são corrigidos para padrões oficiais, permitindo o cruzamento exato com mapas de risco climático e manchas de inundação.
+                            </p>
+                        </div>
 
-                <!-- Coluna 2 -->
-                <div class="space-y-8">
-                    <div>
-                        <h3 class="text-lg font-bold text-indigo-800 flex items-center gap-2 mb-3">
-                            <span class="p-1.5 bg-indigo-100 rounded-lg">⚙️</span> 4. Refinaria de Dados (Python)
-                        </h3>
-                        <p class="text-slate-700 leading-relaxed text-sm">
-                            Com os dados já digitais, entra em cena o Python. O pipeline executa <b>deduplicação</b> (evitar contar o mesmo caso duas vezes) e validação cruzada com as bases da Receita e do Cartão SUS.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-bold text-purple-800 flex items-center gap-2 mb-3">
-                            <span class="p-1.5 bg-purple-100 rounded-lg">📍</span> 5. Normalização Geográfica
-                        </h3>
-                        <p class="text-slate-700 leading-relaxed text-sm">
-                            O dado é "limpo" territorialmente. Nomes de ruas e bairros grafados incorretamente são corrigidos para padrões oficiais do município, permitindo o cruzamento exato com mapas de risco climático.
-                        </p>
-                    </div>
-
-                    <div>
-                        <h3 class="text-lg font-bold text-sky-800 flex items-center gap-2 mb-3">
-                            <span class="p-1.5 bg-sky-100 rounded-lg">🐘</span> 6. Carga no DW/Datalake
-                        </h3>
-                        <p class="text-slate-700 leading-relaxed text-sm">
-                            O resultado final é injetado no <b>coração do servidor</b>. A partir daqui, o dado do DEVS está pronto para ser consumido pela Sala de Situação e cruzado com fontes agnósticas (CEMADEN, INMET).
-                        </p>
+                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
+                            <h3 class="text-xl font-bold text-sky-400 flex items-center gap-2 mb-3">
+                                <span class="text-2xl">🐘</span> 6. Carga no DW/Datalake
+                            </h3>
+                            <p class="text-slate-300 leading-relaxed">
+                                O dado higienizado é injetado no <b>coração do servidor</b>, pronto para consumo pela Sala de Situação e cruzamento com fontes climáticas agnósticas.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Centro de Informação em Saúde e Clima (CISC) — Belém/PA</p>
+    </footer>
 </body>
 </html>
