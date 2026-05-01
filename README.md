@@ -1,65 +1,157 @@
-# CISC Belém — Hub de Arquitetura e Implementação
+# CISC Belém — Centro de Informação em Saúde e Clima
 
 > **SESMA · Departamento de Vigilância em Saúde (DEVS) · Ministério da Saúde**  
-> Cronograma ativo: Jan/2026 → Ago/2026
+> Inauguração prevista: Junho/2026 · Operação plena: Agosto/2026
 
-## O que é este repositório
-Espaço de **arquitetura técnica, prototipagem e documentação de decisões** para a
-implantação do **CISC (Centro de Informação em Saúde e Clima)** em Belém.
+## O que é o CISC
 
-O produto central deste repositório é a definição e prototipagem do
-**servidor de dados do CISC**: um núcleo agnóstico e escalável que centraliza,
-transforma e disponibiliza informações de saúde, clima e território para a
-Sala de Situação municipal.
+O **Centro de Informação em Saúde e Clima (CISC)** é uma unidade técnica municipal
+criada pela parceria entre o **Ministério da Saúde** (via CGClima/SVSA) e a
+**Secretaria Municipal de Saúde de Belém** (SMS), com a missão de **antecipar e
+mitigar os impactos de eventos climáticos extremos sobre a saúde da população**.
+
+O CISC não é um sistema de TI. É um **organismo de inteligência** que integra
+cinco eixos profissionais para transformar dados brutos de saúde, clima e
+território em **alertas precoces, protocolos de resposta e decisões em tempo real**
+para a gestão pública municipal.
+
+## Os 5 Eixos Profissionais do CISC
+
+O Centro opera com uma equipe mínima de **5 profissionais especializados**,
+cada um responsável por um eixo de inteligência:
+
+### 🏥 Eixo 1 — Epidemiologista
+Traduz o risco climático em impacto clínico. Monitora doenças sensíveis ao clima
+(DDA, arboviroses, leptospirose, SRAG), elabora boletins epidemiológicos semanais
+e constrói a **matriz de decisão** que correlaciona alertas climáticos com sobrecarga
+na APS e urgências. Domina os sistemas legados do SUS (SINAN, SIM, SIH, e-SUS APS)
+e modelos em R para detecção de anomalias.
+
+### 🗺️ Eixo 2 — Geógrafo / Análise Espacial
+Espacializa e territorializa os dados. Cruza informações de saúde, censo (IBGE) e
+índices de vulnerabilidade social (IVS) com manchas climáticas (ilhas de calor,
+alagamentos) para **identificar microclimas e priorizar ações intraurbanas**.
+Produz cartografia para Defesa Civil, Assistência Social e localização de populações
+vulneráveis (ribeirinhos, indígenas, idosos, situação de rua).
+
+### 🌦️ Eixo 3 — Meteorologista / Climatologista
+Os "olhos preditivos" do Centro. Monitora continuamente temperatura, umidade,
+precipitação, qualidade do ar e **dados hidrológicos** (nível de rios e tábuas de
+maré — particularidade crítica de Belém). Interpreta previsões do INMET, CEMADEN,
+Censipam, ANA e Marinha, e **sinaliza gatilhos com 72h de antecedência** para
+elevar os níveis de alerta municipal.
+
+### 📊 Eixo 4 — Cientista de Dados
+Focado na automação analítica e modelos preditivos. Calcula linhas de base
+históricas, aplica regressões quantílicas e DLM para encontrar relações
+clima↔saúde, e desenvolve algoritmos de **detecção estatística de anomalias**
+(CUSUM, SaTScan, ML) que disparam alertas autônomos quando o excesso de
+atendimentos ultrapassa o esperado.
+
+### 💻 Eixo 5 — Analista de TI / Engenheiro de Dados
+O arquiteto digital. Projeta e sustenta a integração técnica do CISC: o banco
+central (PostgreSQL/PostGIS), os pipelines de ETL (Airflow + Python), as APIs de
+ingestão, a automação OCR/HITL para dados manuscritos e a configuração da
+**Sala de Situação** (Grafana + Superset no Videowall 80").
+
+> **Este repositório é a base de trabalho do Eixo 5**, documentando a
+> arquitetura técnica que sustenta todos os outros eixos.
 
 ## O Servidor como Coração do CISC
+
 O servidor não é um sistema do DEVS. Ele é o **coração operacional do Centro** —
 o órgão que recebe, processa e distribui inteligência para toda a Sala de Situação.
 
-Sem dados limpos e integrados, o CISC não tem pulso. Por isso, a arquitetura deste
-servidor foi concebida como um **núcleo de ingestão universal**: qualquer fonte de
-dados relevante para a saúde, o clima ou o território de Belém pode ser conectada a
-ele, independentemente de origem, formato ou protocolo.
+A arquitetura foi concebida como um **núcleo de ingestão universal**: qualquer fonte
+relevante pode ser conectada, independentemente de origem, formato ou protocolo.
 
-O **DEVS** é a primeira e mais crítica fonte a ser integrada. Ele concentra a
-inteligência epidemiológica local, mas ainda opera de forma majoritariamente manual
-(fichas em papel, planilhas descentralizadas, sistemas legados federais). Modernizar
-esse fluxo é o passo zero — sem ele, o centro não tem o dado de saúde que justifica
-sua existência.
+O **DEVS** é a primeira e mais crítica fonte. À medida que o CISC amadurece, novos
+parceiros serão conectados: agências meteorológicas, institutos de pesquisa, defesa
+civil, vigilância ambiental, universidades e redes de sensores urbanos.
 
-À medida que o CISC amadurece, novos parceiros poderão ser conectados ao mesmo
-núcleo: agências meteorológicas, institutos de pesquisa, defesa civil, vigilância
-ambiental, universidades, redes de sensores urbanos ou qualquer outro ator que
-produza dado útil à inteligência em saúde pública. A plataforma está projetada para
-crescer sem reestruturação.
+### Particularidades de Belém: Integração Hidrológica
 
-## Stack Tecnológica e Interoperabilidade
-Para garantir que o CISC Belém fale a mesma língua que os principais centros de saúde do Brasil (como a **Fiocruz**), as seguintes tecnologias foram selecionadas como padrão:
+Belém exige uma camada nativa de **dados hidrológicos e de maré**:
+*   Níveis de rios (ANA)
+*   Tábuas de maré (Marinha do Brasil)
+*   Precipitação acumulada cruzada com cotas de alagamento
 
-*   **Orquestração:** Apache Airflow (Gestão de workflows e falhas).
-*   **Processamento:** Python (Pandas/Polars) + Suporte a R/Shiny (Modelos Epidemiológicos).
-*   **Armazenamento:** MinIO (Datalake Bruto) e PostgreSQL com PostGIS (Banco Estruturado).
-*   **Inteligência (BI):** Apache Superset (Enterprise/Deep Analysis) e Metabase (Self-Service para gestores).
-*   **Segurança:** Modelo Híbrido com Túnel VPN (WireGuard/Tailscale) para comunicação segura entre o servidor físico local e a nuvem (Vitrine).
+Esse cruzamento com manchas de vulnerabilidade urbana permite **direcionar equipes
+de saúde antes da emergência se instalar**.
+
+## Stack Tecnológica
+
+| Camada | Tecnologia | Função |
+|---|---|---|
+| **Orquestração** | Apache Airflow | Workflows, DAGs, tratamento de falhas |
+| **Processamento** | Python (Pandas/Polars) | ETL, limpeza, normalização geográfica |
+| **Modelos Epi** | R / Shiny | Baselines, regressões, vigilância sindrômica |
+| **Datalake** | MinIO (S3) | PDFs, CSVs, imagens originais |
+| **DW** | PostgreSQL + PostGIS | Fonte de verdade geoespacial |
+| **BI Enterprise** | Apache Superset | Mapas de calor e análises cartográficas |
+| **BI Self-Service** | Metabase | Painéis acessíveis para gestores |
+| **Real-time** | Grafana | Alertas visuais/sonoros no Videowall |
+| **OCR/HTR** | Florence-2 / PaliGemma 2 | Leitura de manuscritos com HITL |
+| **Segurança** | WireGuard / Tailscale | VPN servidor local ↔ nuvem |
+| **Infra** | Docker / Compose | Portabilidade total |
+
+## Parceria MS × SMS
+
+| Responsável | Contribuição |
+|---|---|
+| **MS (CGClima/SVSA)** | 5 Workstations, servidor, TV 4K 80", videoconferência, mobiliário, custeio da equipe por 2 anos, acesso a plataformas nacionais |
+| **SMS Belém** | Espaço físico, adaptação, organograma, POPs, articulação de dados locais |
+| **Conjunto** | Seleção da equipe, alertas precoces, análises exploratórias integradas |
 
 ## Diagramas e Protótipos
 
 | Artefato | Descrição |
 |---|---|
-| [**Arquitetura Agnóstica (Coração do CISC)**](etl_arquitetura.html) | Fluxograma macro do servidor centralizador integrando múltiplas fontes (DEVS, INMET, CEMADEN, etc.). |
-| [**Pipeline Detalhado DEVS**](devs_etl_detalhado.html) | Aprofundamento do fluxo interno do DEVS: do papel ao dado estruturado via OCR, HITL e Python. |
-| [**Arquitetura Lógica HITL**](hitl_devs_arquitetura.html) | Ideação do motor de decisão que orquestra a colaboração entre IA e humanos (Learning Loop). |
-| [**Estratégia de IA e HTR**](cisc_ia_modelagem.html) | Modelagem técnica de reconhecimento de manuscritos, seleção de modelos e requisitos de hardware. |
+| [**Arquitetura Agnóstica**](etl_arquitetura.html) | Fluxograma macro do servidor centralizador (DEVS, INMET, CEMADEN, etc.). |
+| [**Pipeline DEVS**](devs_etl_detalhado.html) | Do papel ao dado estruturado via OCR, HITL e Python. |
+| [**Arquitetura HITL**](hitl_devs_arquitetura.html) | Motor de decisão IA + humanos (Learning Loop). |
+| [**Estratégia de IA/HTR**](cisc_ia_modelagem.html) | Modelos, hardware e fine-tuning local. |
+| [**Sala de Situação**](sala_situacao.html) | Videowall, painéis real-time e protocolo de alertas. |
+| [**Matriz de Alertas**](matriz_alertas.html) | Gatilhos climáticos × thresholds epidemiológicos. |
 
 ## Documentação de Referência
 
-* [**Acervo Documental CISC (NotebookLM)**](https://notebooklm.google.com/notebook/ab930b41-9c51-4b42-9f63-a687c30f49ed) — Base documental completa do projeto para consulta interativa e atualização.
+* [**Acervo Documental CISC (NotebookLM)**](https://notebooklm.google.com/notebook/ab930b41-9c51-4b42-9f63-a687c30f49ed)
 
-## Roadmap de Implementação
+## Governança
 
-- [ ] **Mai/2026** — Contratação/designação da equipe técnica mínima
-- [ ] **Jun/2026** — Capacitação e alinhamento metodológico
-- [ ] **Jul/2026** — Articulação com áreas técnicas da SMS e órgãos externos
-- [ ] **Ago/2026** — Primeiras análises, painéis e operação progressiva do CISC
+O CISC será incluído no **organograma da SMS**, com:
+*   Missão, visão e valores próprios
+*   **POPs** (Procedimentos Operacionais Padrão)
+*   Fluxos interno, intra e intersetorial
+*   Articulação com **Defesa Civil**, **Meio Ambiente** e **Assistência Social**
+*   Integração com app **"Guardiões da Saúde"** (até Dez/2026)
 
-*Cronograma baseado no Plano Estratégico do Ministério da Saúde (2026).*
+## Roadmap
+
+### ✅ Concluído (Abr/2026)
+- [x] Definição do espaço físico do CISC
+- [x] Definição do responsável e demandas (pela Secretária)
+
+### 📌 Curto Prazo (Mai — Jul/2026)
+- [ ] Selecionar e contratar equipe técnica (5 profissionais)
+- [ ] Elaborar planta do CISC e diagnóstico de risco
+- [ ] Definir lotação no organograma, missão, visão e valores
+- [ ] Receber equipamentos (workstations, servidor, videowall)
+- [ ] 🚀 **Inauguração do CISC (MVP)** — Jun/2026
+- [ ] Articular dados de saúde locais
+- [ ] Ambientação e capacitação dos profissionais
+
+### 📐 Médio Prazo (Jul — Dez/2026)
+- [ ] Criar modelo de arquitetura de dados saúde + clima
+- [ ] Criar POPs e fluxos de trabalho intersetorial
+- [ ] Articular dados climáticos, ambientais e de saneamento
+- [ ] Análises exploratórias integradas
+- [ ] Internalizar protocolos de eventos extremos hidrológicos
+- [ ] Integrar app "Guardiões da Saúde" ao CISC
+
+### 🔭 Longo Prazo (Ago/2026 — Jun/2027)
+- [ ] Sistemas de alerta precoce para extremo de temperatura
+- [ ] Protocolo operacional da cidade para extremo de temperatura
+
+*Cronograma baseado no Plano de Ação do Ministério da Saúde (CGClima/SVSA, 2026).*

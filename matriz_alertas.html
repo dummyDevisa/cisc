@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matriz de Decisão e Alertas - CISC Belém</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
+
+        mermaid.initialize({ 
+            startOnLoad: false, 
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00d2ff',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#3a7bd5',
+                lineColor: '#94a3b8',
+                secondaryColor: '#3a7bd5',
+                tertiaryColor: '#0a0e14'
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await mermaid.run({ querySelector: '.mermaid' });
+                const elem = document.querySelector('.mermaid svg');
+                const container = document.getElementById('panzoom-container');
+
+                if (elem) {
+                    elem.style.maxWidth = 'none';
+                    elem.style.height = '100%';
+                    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 0.3, step: 0.3 });
+
+                    container.addEventListener('wheel', panzoom.zoomWithWheel);
+                    document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+                    document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+                    document.getElementById('zoom-reset').addEventListener('click', panzoom.reset);
+                    document.getElementById('fullscreen').addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            container.requestFullscreen().catch(err => {
+                                console.error(`Erro: ${err.message}`);
+                            });
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao renderizar o Mermaid:", error);
+            }
+        });
+    </script>
+
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --accent: #ff007a;
+            --bg-dark: #0a0e14;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.8);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 122, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .bg-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4;
+            background: linear-gradient(90deg, var(--bg-dark) 20px, transparent 1%) center, linear-gradient(var(--bg-dark) 20px, transparent 1%) center, rgba(255, 255, 255, 0.05);
+            background-size: 22px 22px;
+        }
+
+        header.site-header {
+            height: 80px; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 5%; position: sticky; top: 0; z-index: 100;
+            background: var(--glass); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .logo i { -webkit-text-fill-color: var(--primary); }
+
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;
+        }
+        .nav-links a:hover { color: var(--primary); }
+
+        .content-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(10px); }
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+
+        footer.site-footer {
+            text-align: center; padding: 60px 20px; color: var(--text-dim); font-size: 0.85rem;
+            border-top: 1px solid var(--border); margin-top: 80px; background: rgba(0,0,0,0.2);
+        }
+
+        .zoom-controls { background: rgba(15, 23, 42, 0.9) !important; border: 1px solid var(--border) !important; }
+        .zoom-controls button { color: white !important; background: rgba(255,255,255,0.05) !important; }
+        .zoom-controls button:hover { background: var(--primary) !important; color: var(--bg-dark) !important; }
+
+        /* Matriz table */
+        .matrix-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+        .matrix-table th { padding: 14px 18px; text-align: left; font-family: 'Outfit', sans-serif; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; background: rgba(255,255,255,0.04); color: var(--text-dim); }
+        .matrix-table td { padding: 16px 18px; border-top: 1px solid var(--border); font-size: 0.9rem; color: #cbd5e1; vertical-align: top; }
+        .matrix-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+        .badge-green { background: rgba(34,197,94,0.15); color: #4ade80; }
+        .badge-yellow { background: rgba(234,179,8,0.15); color: #facc15; }
+        .badge-orange { background: rgba(249,115,22,0.15); color: #fb923c; }
+        .badge-red { background: rgba(239,68,68,0.15); color: #f87171; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .matrix-table { font-size: 0.8rem; }
+            .matrix-table th, .matrix-table td { padding: 10px 12px; }
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="bg-mesh"></div>
+
+    <header class="site-header">
+        <div class="logo">
+            <i class="fas fa-microchip"></i>
+            <span>CISC BELÉM</span>
+        </div>
+        <nav class="nav-links">
+            <a href="index.html"><i class="fas fa-home"></i> Início</a>
+            <a href="etl_arquitetura.html"><i class="fas fa-project-diagram"></i> Arquitetura</a>
+            <a href="devs_etl_detalhado.html"><i class="fas fa-stream"></i> Pipeline</a>
+            <a href="hitl_devs_arquitetura.html"><i class="fas fa-brain"></i> HITL</a>
+            <a href="cisc_ia_modelagem.html"><i class="fas fa-robot"></i> IA/HTR</a>
+            <a href="sala_situacao.html"><i class="fas fa-tv"></i> Sala</a>
+            <a href="matriz_alertas.html" style="color: var(--primary);"><i class="fas fa-bell"></i> Alertas</a>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-8">
+        <div class="content-card rounded-2xl p-8 mb-8">
+            <header class="mb-8 border-b border-white/10 pb-4">
+                <h1 class="text-4xl font-bold text-white">Matriz de Decisão e Alertas</h1>
+                <p class="text-slate-400 mt-2 text-lg">Cruzamento de gatilhos climáticos com thresholds epidemiológicos para definir o nível de resposta do CISC. O coração da antecipação.</p>
+            </header>
+
+            <!-- Diagrama do Fluxo de Escalação -->
+            <div id="panzoom-container" class="relative bg-black/20 border border-white/10 rounded-xl overflow-hidden flex justify-center mb-10" style="height: 600px;">
+                <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 zoom-controls p-2 rounded-lg shadow-xl">
+                    <button id="zoom-in" class="w-8 h-8 rounded font-bold transition-all" title="Zoom +">+</button>
+                    <button id="zoom-out" class="w-8 h-8 rounded font-bold transition-all" title="Zoom -">-</button>
+                    <button id="zoom-reset" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Reset">1:1</button>
+                    <button id="fullscreen" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Fullscreen">⛶</button>
+                </div>
+                
+                <div class="absolute bottom-4 left-4 z-10 text-xs text-slate-400 bg-black/40 px-3 py-2 rounded-lg border border-white/10 backdrop-blur-md pointer-events-none">
+                    💡 <b>Dica:</b> Scroll para zoom, clique e arraste para mover.
+                </div>
+
+                <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+flowchart TD
+    classDef clima fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+    classDef epi fill:#2e1065,stroke:#a855f7,stroke-width:2px,color:#f3e8ff;
+    classDef hidro fill:#082f49,stroke:#0ea5e9,stroke-width:2px,color:#e0f2fe;
+    classDef decide fill:#1e293b,stroke:#94a3b8,stroke-width:2px,color:#cbd5e1;
+    classDef green fill:#064e3b,stroke:#22c55e,stroke-width:2px,color:#d1fae5;
+    classDef yellow fill:#422006,stroke:#eab308,stroke-width:2px,color:#fef9c3;
+    classDef orange fill:#431407,stroke:#f97316,stroke-width:2px,color:#ffedd5;
+    classDef red fill:#450a0a,stroke:#ef4444,stroke-width:2px,color:#fecaca;
+
+    subgraph GATILHOS ["Gatilhos Monitorados (Eixos 1, 3 e 4)"]
+        direction LR
+        G1["🌡️ Temperatura<br>Tmax, Indice de Calor<br>(INMET)"]:::clima
+        G2["🌧️ Precipitacao<br>Acumulado 24h/72h<br>(CEMADEN)"]:::clima
+        G3["🌊 Nivel Hidrologico<br>Rios + Tábua de Maré<br>(ANA / Marinha)"]:::hidro
+        G4["📊 Excesso Epidemio<br>Atendimentos vs Baseline<br>(SINAN / e-SUS)"]:::epi
+    end
+
+    ENGINE{"🧠 Motor de Decisão<br>(Cruzamento Automático<br>Grafana + R)"}:::decide
+
+    G1 --> ENGINE
+    G2 --> ENGINE
+    G3 --> ENGINE
+    G4 --> ENGINE
+
+    subgraph NIVEIS ["Níveis de Resposta"]
+        N1["🟢 NORMALIDADE<br>Rotina de monitoramento"]:::green
+        N2["🟡 ATENCAO<br>Monitoramento ativo 72h"]:::yellow
+        N3["🟠 ALERTA<br>Acionamento intersetorial"]:::orange
+        N4["🔴 EMERGENCIA<br>Gabinete de crise"]:::red
+    end
+
+    ENGINE -->|Todos OK| N1
+    ENGINE -->|Forecast de risco| N2
+    ENGINE -->|Threshold cruzado| N3
+    ENGINE -->|Evento confirmado| N4
+
+    subgraph ACOES ["Ações por Nível"]
+        direction LR
+        A2["Comunicação interna<br>Equipe CISC reforçada"]:::yellow
+        A3["Defesa Civil + APS<br>Boletim extraordinário"]:::orange
+        A4["Protocolo intersetorial<br>Comunicação de risco<br>Gabinete de crise"]:::red
+    end
+
+    N2 -.-> A2
+    N3 -.-> A3
+    N4 -.-> A4
+                </pre>
+            </div>
+
+            <!-- Matriz de Gatilhos -->
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold text-white mb-6">Gatilhos Climáticos e Hidrológicos</h2>
+                <p class="text-slate-400 mb-6">Thresholds iniciais baseados em referências nacionais (INMET, CEMADEN, Fiocruz). Serão calibrados com dados locais de Belém nos primeiros 6 meses de operação do CISC.</p>
+                
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Variável</th>
+                            <th>Fonte</th>
+                            <th><span class="badge badge-green">Normal</span></th>
+                            <th><span class="badge badge-yellow">Atenção</span></th>
+                            <th><span class="badge badge-orange">Alerta</span></th>
+                            <th><span class="badge badge-red">Emergência</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>🌡️ Temperatura Máxima</strong></td>
+                            <td>INMET</td>
+                            <td>Tmax &lt; 34°C</td>
+                            <td>34°C — 37°C<br><em>por 2+ dias</em></td>
+                            <td>37°C — 40°C<br><em>por 3+ dias</em></td>
+                            <td>Tmax &gt; 40°C<br><em>ou 5+ dias &gt;37°C</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>🔥 Índice de Calor</strong></td>
+                            <td>Calculado</td>
+                            <td>IC &lt; 38°C</td>
+                            <td>38°C — 42°C</td>
+                            <td>42°C — 48°C</td>
+                            <td>IC &gt; 48°C</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🌧️ Precipitação 24h</strong></td>
+                            <td>CEMADEN</td>
+                            <td>&lt; 30mm</td>
+                            <td>30mm — 50mm</td>
+                            <td>50mm — 80mm</td>
+                            <td>&gt; 80mm</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🌧️ Precipitação 72h</strong></td>
+                            <td>CEMADEN</td>
+                            <td>&lt; 80mm</td>
+                            <td>80mm — 120mm</td>
+                            <td>120mm — 180mm</td>
+                            <td>&gt; 180mm</td>
+                        </tr>
+                        <tr>
+                            <td><strong>🌊 Nível de Rio/Maré</strong></td>
+                            <td>ANA / Marinha</td>
+                            <td>Abaixo da cota</td>
+                            <td>Aproximando cota<br><em>de atenção</em></td>
+                            <td>Acima da cota<br><em>de alerta</em></td>
+                            <td>Acima da cota<br><em>de inundação</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>💨 Qualidade do Ar</strong></td>
+                            <td>Sensores/INMET</td>
+                            <td>IQAr Bom</td>
+                            <td>IQAr Moderado</td>
+                            <td>IQAr Ruim</td>
+                            <td>IQAr Péssimo</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Matriz Epidemiológica -->
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold text-white mb-6">Thresholds Epidemiológicos</h2>
+                <p class="text-slate-400 mb-6">Calculados pelo <strong>Eixo 4 (Cientista de Dados)</strong> usando baseline histórica municipal. O excesso sobre a média esperada define a escalação.</p>
+                
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Agravo</th>
+                            <th>Fonte SIS</th>
+                            <th><span class="badge badge-green">Normal</span></th>
+                            <th><span class="badge badge-yellow">Atenção</span></th>
+                            <th><span class="badge badge-orange">Alerta</span></th>
+                            <th><span class="badge badge-red">Emergência</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Doenças Diarreicas (DDA)</strong></td>
+                            <td>e-SUS / SIVEP</td>
+                            <td>Dentro do esperado</td>
+                            <td>+20% sobre baseline<br><em>por 1 semana</em></td>
+                            <td>+50% sobre baseline<br><em>por 2 semanas</em></td>
+                            <td>+100% sobre baseline<br><em>ou surto confirmado</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Arboviroses (Dengue, Chik, Zika)</strong></td>
+                            <td>SINAN</td>
+                            <td>Dentro do esperado</td>
+                            <td>Aumento de LIRAa<br><em>em distritos-alvo</em></td>
+                            <td>+50% notificações<br><em>vs. mesmo período</em></td>
+                            <td>Epidemia declarada</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Leptospirose</strong></td>
+                            <td>SINAN</td>
+                            <td>Casos esporádicos</td>
+                            <td>Aumento pós-alagamento</td>
+                            <td>Cluster geográfico<br><em>(SaTScan)</em></td>
+                            <td>Surto confirmado</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SRAG / Influenza</strong></td>
+                            <td>SIVEP-Gripe</td>
+                            <td>Dentro do canal<br><em>endêmico</em></td>
+                            <td>Acima do P75</td>
+                            <td>Acima do P90</td>
+                            <td>Acima do P95<br><em>+ ocupação UTI</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Mortalidade por Calor</strong></td>
+                            <td>SIM / SIH</td>
+                            <td>Baseline anual</td>
+                            <td>Excesso em idosos<br><em>&gt;70 anos</em></td>
+                            <td>Excesso em múltiplas<br><em>faixas etárias</em></td>
+                            <td>Excesso severo<br><em>+ UTIs lotadas</em></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Lógica de Cruzamento -->
+            <div class="border-t border-white/10 pt-8">
+                <h2 class="text-3xl font-bold text-white mb-6">Lógica de Cruzamento: O Diferencial do CISC</h2>
+                <p class="text-slate-400 mb-8">O valor do CISC não está em monitorar clima <em>ou</em> saúde isoladamente — isso já existe. O diferencial é o <strong>cruzamento automático</strong> entre gatilhos climáticos e thresholds epidemiológicos.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/5 border-l-4 border-sky-500 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-sky-400 mb-3">🌧️ + 🦟 Chuva → Arboviroses</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Precipitação acumulada de 72h acima de 120mm <strong>E</strong> LIRAa elevado em distritos com IVS alto → <strong>Alerta Proativo</strong>: intensificar nebulização e mutirões de limpeza <em>antes</em> do pico de notificações (lag de 10–14 dias).
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">🌡️ + 🏥 Calor → Sobrecarga UPA</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Índice de Calor acima de 42°C por 3+ dias <strong>E</strong> aumento de 20% em atendimentos de UPA em idosos → <strong>Atenção</strong>: ativar pontos de hidratação, comunicar risco via APS e reforçar equipes de SAMU em áreas vulneráveis.
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border-l-4 border-teal-500 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-teal-400 mb-3">🌊 + 🐀 Maré/Rio → Leptospirose</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Nível do rio acima da cota de alerta <strong>E</strong> precipitação acumulada elevada → <strong>Alerta Hidrológico</strong>: Defesa Civil aciona protocolo de evacuação, APS prepara atendimento em abrigos, CISC monitora surgimento de leptospirose no lag de 7–14 dias.
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border-l-4 border-red-500 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-red-400 mb-3">📊 + 🌡️ Anomalia Estatística</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Detecção CUSUM/SaTScan de cluster geográfico de DDA <strong>E</strong> evento de calor extremo <strong>E</strong> falha no abastecimento de água → <strong>Emergência</strong>: gabinete de crise, comunicação de risco à população, reforço de saneamento emergencial.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-8 p-6 bg-black/40 border border-white/10 rounded-xl">
+                    <h3 class="text-white font-bold mb-3 text-lg">⚠️ Nota Importante</h3>
+                    <p class="text-slate-400 leading-relaxed text-sm">
+                        Todos os thresholds acima são <strong>valores iniciais de referência</strong>, baseados em parâmetros nacionais (INMET, Fiocruz, CEMADEN). Nos primeiros 6 meses de operação do CISC, o <strong>Eixo 4 (Cientista de Dados)</strong> calculará as baselines históricas específicas de Belém para cada variável e agravo, refinando os gatilhos com dados locais e sazonais.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Centro de Informação em Saúde e Clima (CISC) — Belém/PA</p>
+    </footer>
+</body>
+</html>

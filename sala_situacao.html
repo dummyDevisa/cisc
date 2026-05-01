@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Situação - CISC Belém</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
+
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00d2ff',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#3a7bd5',
+                lineColor: '#94a3b8',
+                secondaryColor: '#3a7bd5',
+                tertiaryColor: '#0a0e14'
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await mermaid.run({ querySelector: '.mermaid' });
+                const elem = document.querySelector('.mermaid svg');
+                const container = document.getElementById('panzoom-container');
+
+                if (elem) {
+                    elem.style.maxWidth = 'none';
+                    elem.style.height = '100%';
+                    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 0.3, step: 0.3 });
+
+                    container.addEventListener('wheel', panzoom.zoomWithWheel);
+                    document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+                    document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+                    document.getElementById('zoom-reset').addEventListener('click', panzoom.reset);
+                    document.getElementById('fullscreen').addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            container.requestFullscreen().catch(err => {
+                                console.error(`Erro ao entrar em tela cheia: ${err.message}`);
+                            });
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao renderizar o Mermaid:", error);
+            }
+        });
+    </script>
+
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --accent: #ff007a;
+            --bg-dark: #0a0e14;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.8);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 122, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .bg-mesh {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.4;
+            background: linear-gradient(90deg, var(--bg-dark) 20px, transparent 1%) center, linear-gradient(var(--bg-dark) 20px, transparent 1%) center, rgba(255, 255, 255, 0.05);
+            background-size: 22px 22px;
+        }
+
+        header.site-header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 25px;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        footer.site-footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .zoom-controls {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border: 1px solid var(--border) !important;
+        }
+
+        .zoom-controls button {
+            color: white !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .zoom-controls button:hover {
+            background: var(--primary) !important;
+            color: var(--bg-dark) !important;
+        }
+
+        /* Videowall Image Container */
+        .videowall-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .videowall-container:hover {
+            transform: scale(1.01);
+        }
+
+        .videowall-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Alert levels */
+        .alert-level {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .alert-level:hover {
+            transform: translateX(6px);
+        }
+
+        .alert-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .alert-normal .alert-dot {
+            background: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+        }
+
+        .alert-atencao .alert-dot {
+            background: #eab308;
+            box-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+        }
+
+        .alert-alerta .alert-dot {
+            background: #f97316;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .alert-emergencia .alert-dot {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.3);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .videowall {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                height: auto;
+            }
+
+            .panel-mapa {
+                grid-row: span 1;
+                min-height: 200px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+    <div class="bg-mesh"></div>
+
+    <header class="site-header">
+        <div class="logo">
+            <i class="fas fa-microchip"></i>
+            <span>CISC BELÉM</span>
+        </div>
+        <nav class="nav-links">
+            <a href="index.html"><i class="fas fa-home"></i> Início</a>
+            <a href="etl_arquitetura.html"><i class="fas fa-project-diagram"></i> Arquitetura</a>
+            <a href="devs_etl_detalhado.html"><i class="fas fa-stream"></i> Pipeline</a>
+            <a href="hitl_devs_arquitetura.html"><i class="fas fa-brain"></i> HITL</a>
+            <a href="cisc_ia_modelagem.html"><i class="fas fa-robot"></i> IA/HTR</a>
+            <a href="sala_situacao.html" style="color: var(--primary);"><i class="fas fa-tv"></i> Sala</a>
+            <a href="matriz_alertas.html"><i class="fas fa-bell"></i> Alertas</a>
+        </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-8">
+        <div class="content-card rounded-2xl p-8 mb-8">
+            <header class="mb-8 border-b border-white/10 pb-4">
+                <h1 class="text-4xl font-bold text-white">Sala de Situação: Videowall e Painéis Operacionais</h1>
+                <p class="text-slate-400 mt-2 text-lg">Layout operacional do Videowall 4K de 80 polegadas — o ponto de
+                    convergência visual de todos os 5 eixos do CISC. Onde dados viram decisão.</p>
+            </header>
+
+            <!-- Videowall Mockup Image -->
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <span
+                        class="text-xs bg-white/10 px-3 py-1 rounded-full text-slate-400 uppercase tracking-widest">Monitoramento
+                        em Tempo Real</span>
+                    <span class="text-xs text-slate-500">Perspectiva da Sala de Situação CISC</span>
+                </div>
+                <div class="videowall-container">
+                    <img src="dashboard_mock.webp" alt="Videowall CISC Belém" class="videowall-image">
+                    <div
+                        class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-6">
+                        <p class="text-white text-sm font-medium">Ambiente operacional: Videowall 4K integrado ao centro
+                            de comando.</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Diagrama de Fluxo de Dados -->
+            <div id="panzoom-container"
+                class="relative bg-black/20 border border-white/10 rounded-xl overflow-hidden flex justify-center"
+                style="height: 550px;">
+                <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 zoom-controls p-2 rounded-lg shadow-xl">
+                    <button id="zoom-in" class="w-8 h-8 rounded font-bold transition-all"
+                        title="Aumentar Zoom">+</button>
+                    <button id="zoom-out" class="w-8 h-8 rounded font-bold transition-all"
+                        title="Diminuir Zoom">-</button>
+                    <button id="zoom-reset" class="w-8 h-8 rounded text-xs font-bold transition-all"
+                        title="Resetar Zoom">1:1</button>
+                    <button id="fullscreen" class="w-8 h-8 rounded text-xs font-bold transition-all"
+                        title="Tela Cheia">⛶</button>
+                </div>
+
+                <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+flowchart TD
+    classDef fonte fill:#082f49,stroke:#0ea5e9,stroke-width:2px,color:#e0f2fe;
+    classDef motor fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+    classDef painel fill:#042f2e,stroke:#14b8a6,stroke-width:2px,color:#ccfbf1;
+    classDef alerta fill:#450a0a,stroke:#ef4444,stroke-width:2px,color:#fecaca;
+
+    subgraph DADOS ["Fontes de Dados (via Airflow)"]
+        D1["SINAN / e-SUS / SIH<br>(Eixo 1: Epidemio)"]:::fonte
+        D2["PostGIS + IBGE + IVS<br>(Eixo 2: Geógrafo)"]:::fonte
+        D3["INMET / CEMADEN / ANA / Maré<br>(Eixo 3: Meteo)"]:::fonte
+        D4["Modelos R + ML<br>(Eixo 4: Cientista)"]:::fonte
+    end
+
+    subgraph DW ["PostgreSQL / PostGIS"]
+        DB[("Única Fonte de Verdade<br>(Dados Validados)")]:::motor
+    end
+
+    subgraph SALA ["Videowall 80 polegadas — Sala de Situação"]
+        direction LR
+        P1["🗺️ Mapa de Vulnerabilidade<br>(Superset)"]:::painel
+        P2["📊 Vigilância Sindrômica<br>(Grafana + R/Shiny)"]:::painel
+        P3["🌡️ Monitor Climático<br>(Grafana Real-time)"]:::painel
+    end
+
+    subgraph ALERTA ["Motor de Alertas"]
+        A1["🚨 Gatilho Automático<br>(Threshold ultrapassado)"]:::alerta
+        A2["📢 Disparo de Protocolo<br>(SMS, Defesa Civil)"]:::alerta
+    end
+
+    D1 --> DB
+    D2 --> DB
+    D3 --> DB
+    D4 --> DB
+
+    DB --> P1
+    DB --> P2
+    DB --> P3
+
+    P2 -.->|Anomalia Detectada| A1
+    P3 -.->|Forecast 72h| A1
+    A1 --> A2
+                </pre>
+            </div>
+
+            <!-- Detalhamento dos Painéis -->
+            <div class="mt-12 border-t border-white/10 pt-8">
+                <h2 class="text-3xl font-bold text-white mb-6">Operação da Sala de Situação</h2>
+                <p class="text-slate-400 mb-8">O Videowall é dividido em 3 zonas visuais. Cada zona atende a pelo menos
+                    2 eixos profissionais e é alimentada por uma ferramenta de BI específica.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="bg-white/5 border-l-4 border-teal-500 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-teal-400 mb-3">🗺️ Zona 1 — Mapa Central</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+                            Ocupa <strong>metade esquerda</strong> da tela. Exibe o mapa de calor de Belém com camadas
+                            sobrepostas: vulnerabilidade social (IVS), ilhas de calor urbano, manchas históricas de
+                            alagamento e notificações geocodificadas em tempo real.
+                        </p>
+                        <p class="text-xs text-slate-500"><strong>Ferramenta:</strong> Apache Superset (deck.gl maps) ·
+                            <strong>Eixos:</strong> Geógrafo + Epidemio + Meteo</p>
+                    </div>
+
+                    <div class="bg-white/5 border-l-4 border-purple-500 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-purple-400 mb-3">📊 Zona 2 — Vigilância</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+                            <strong>Quadrante superior direito.</strong> Séries temporais de agravos sensíveis ao clima
+                            (DDA, arboviroses, SRAG). Linha de base histórica (média esperada) vs. dados atuais. Detecta
+                            automaticamente quando o excesso ultrapassa thresholds estatísticos.
+                        </p>
+                        <p class="text-xs text-slate-500"><strong>Ferramenta:</strong> Grafana + R/Shiny embed ·
+                            <strong>Eixos:</strong> Epidemio + Cientista de Dados</p>
+                    </div>
+
+                    <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">🌡️ Zona 3 — Clima</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+                            <strong>Quadrante inferior direito.</strong> Temperatura (Tmax, Tmin, Índice de Calor),
+                            precipitação acumulada, umidade, qualidade do ar, <strong>nível de rios e tábua de
+                                maré</strong>. Forecast de 72h com sinalização de gatilhos de alerta.
+                        </p>
+                        <p class="text-xs text-slate-500"><strong>Ferramenta:</strong> Grafana real-time ·
+                            <strong>Eixos:</strong> Meteorologista + Cientista de Dados</p>
+                    </div>
+                </div>
+
+                <!-- Níveis de Alerta -->
+                <h2 class="text-3xl font-bold text-white mb-6">Protocolo de Alertas Visuais e Sonoros</h2>
+                <p class="text-slate-400 mb-6">O Grafana dispara alertas visuais (mudança de cor do painel) e sonoros
+                    (alarme na sala) quando os thresholds são ultrapassados. Os 4 níveis operacionais:</p>
+
+                <div class="space-y-3">
+                    <div class="alert-level alert-normal bg-green-500/5 border border-green-500/20 rounded-xl">
+                        <div class="alert-dot"></div>
+                        <div>
+                            <div class="font-bold text-green-400">NORMALIDADE</div>
+                            <div class="text-sm text-slate-400">Todos os indicadores dentro da baseline. Operação de
+                                rotina. Monitoramento passivo.</div>
+                        </div>
+                    </div>
+                    <div class="alert-level alert-atencao bg-yellow-500/5 border border-yellow-500/20 rounded-xl">
+                        <div class="alert-dot"></div>
+                        <div>
+                            <div class="font-bold text-yellow-400">ATENÇÃO</div>
+                            <div class="text-sm text-slate-400">Forecast indica tendência de risco em 72h. Equipe
+                                técnica inicia monitoramento ativo. Comunicação interna elevada.</div>
+                        </div>
+                    </div>
+                    <div class="alert-level alert-alerta bg-orange-500/5 border border-orange-500/20 rounded-xl">
+                        <div class="alert-dot"></div>
+                        <div>
+                            <div class="font-bold text-orange-400">ALERTA</div>
+                            <div class="text-sm text-slate-400">Threshold climático ou epidemiológico ultrapassado.
+                                Acionamento da Defesa Civil e APS. Boletim extraordinário emitido.</div>
+                        </div>
+                    </div>
+                    <div class="alert-level alert-emergencia bg-red-500/5 border border-red-500/20 rounded-xl">
+                        <div class="alert-dot"></div>
+                        <div>
+                            <div class="font-bold text-red-400">EMERGÊNCIA</div>
+                            <div class="text-sm text-slate-400">Evento extremo confirmado. Protocolo intersetorial
+                                ativado. Gabinete de crise. Comunicação de risco à população.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Centro de Informação em Saúde e Clima (CISC) — Belém/PA</p>
+    </footer>
+</body>
+
+</html>
