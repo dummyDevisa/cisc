@@ -119,18 +119,113 @@
 
         .logo i { -webkit-text-fill-color: var(--primary); }
 
-        .nav-links { display: flex; gap: 25px; }
-        .nav-links a {
+        
+        
+        
+        
+        /* Navegação Organizada CISC */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .group-title {
             color: var(--text-dim);
-            text-decoration: none;
             font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-weight: 600;
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px 0;
         }
-        .nav-links a:hover { color: var(--primary); }
+
+        .group-title i.fa-chevron-down {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-group:hover .group-title {
+            color: var(--primary);
+        }
+
+        .nav-group:hover i.fa-chevron-down {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .group-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1000;
+        }
+
+        .nav-group:hover .group-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .group-content a {
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--text-dim) !important;
+            font-size: 0.85rem !important;
+            text-decoration: none !important;
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .group-content a:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--primary) !important;
+            padding-left: 20px;
+        }
+
+        .group-content a i {
+            width: 18px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-links { gap: 15px; }
+            .group-title { font-size: 0.8rem; }
+        }
+
+
+            .group-title { font-size: 0.8rem; }
+        }
+
+            .group-title { font-size: 0.75rem; }
+        }
+
 
         .content-card {
             background: var(--card-bg);
@@ -166,29 +261,153 @@
 </head>
 <body class="font-sans">
     <div class="bg-mesh"></div>
-
     <header class="site-header">
-        <div class="logo">
+        <a href="index.html" class="logo" style="text-decoration: none;">
             <i class="fas fa-microchip"></i>
             <span>CISC BELÉM</span>
-        </div>
+        </a>
         <nav class="nav-links">
-            <a href="index.html"><i class="fas fa-home"></i> Início</a>
-            <a href="etl_arquitetura.html"><i class="fas fa-project-diagram"></i> Arquitetura</a>
-            <a href="devs_etl_detalhado.html" style="color: var(--primary);"><i class="fas fa-stream"></i> Pipeline</a>
-            <a href="hitl_devs_arquitetura.html"><i class="fas fa-brain"></i> HITL</a>
-            <a href="cisc_ia_modelagem.html"><i class="fas fa-robot"></i> IA/HTR</a>
-            <a href="sala_situacao.html"><i class="fas fa-tv"></i> Sala</a>
-            <a href="matriz_alertas.html"><i class="fas fa-bell"></i> Alertas</a>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-layer-group"></i> Estrutura
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="index.html" class=""><i class="fas fa-home"></i> Início / Visão Geral</a>
+                    <a href="etl_arquitetura.html" class=""><i class="fas fa-project-diagram"></i> Arquitetura Core</a>
+                    <a href="schema_linkage.html" class=""><i class="fas fa-database"></i> Schema PostGIS</a>
+                </div>
+            </div>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-microchip"></i> Inteligência
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="devs_etl_detalhado.html" class="active"><i class="fas fa-file-medical"></i> Pipeline DEVS</a>
+                    <a href="visa_etl_detalhado.html" class=""><i class="fas fa-shield-virus"></i> Pipeline VISA</a>
+                    <a href="cisc_ia_modelagem.html" class=""><i class="fas fa-robot"></i> Modelagem IA/HTR</a>
+                    <a href="hitl_devs_arquitetura.html" class=""><i class="fas fa-users-cog"></i> Validação HITL</a>
+                </div>
+            </div>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-eye"></i> Decisão
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="sala_situacao.html" class=""><i class="fas fa-desktop"></i> Sala de Situação</a>
+                    <a href="matriz_alertas.html" class=""><i class="fas fa-exclamation-triangle"></i> Matriz de Alertas</a>
+                    <a href="dashboards_mockups.html" class=""><i class="fas fa-chart-line"></i> Mockups de Dashboards</a>
+                </div>
+            </div>
+            <a href="https://github.com/dummyDevisa/cisc" target="_blank" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-left: 10px;">
+                <i class="fab fa-github"></i> GitHub
+            </a>
         </nav>
     </header>
 
+    
+    
+    
+    
+    
+
+
+
+
+
     <main class="max-w-7xl mx-auto p-8">
         <div class="content-card rounded-2xl p-8 mb-8">
-            <header class="mb-8 border-b border-white/10 pb-4">
-                <h1 class="text-4xl font-bold text-white">Pipeline de ETL Detalhado: Operação DEVS Belém</h1>
-                <p class="text-slate-400 mt-2 text-lg">Aprofundamento técnico do fluxo de tratamento de dados internos da Vigilância em Saúde. Este é o processo que transforma o caos do papel em inteligência para o servidor central do CISC.</p>
-            </header>
+            
+    
+    
+    
+    
+
+
+
+
+
+            <!-- Contexto Institucional do DEVS -->
+            <div class="mb-10">
+                <h2 class="text-2xl font-bold text-white mb-2">O DEVS: Quem São e o Que Fazem</h2>
+                <p class="text-slate-400 mb-6 text-sm">Divisão de Vigilância em Saúde da SESMA · Av. Gov. José Malcher, 2821 · Belém/PA</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <!-- DVE -->
+                    <div class="bg-red-500/5 border border-red-500/20 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center text-sm">🦠</div>
+                            <div>
+                                <div class="text-xs font-bold text-red-400 uppercase tracking-widest">DVE</div>
+                                <div class="text-xs text-slate-500">Vigilância Epidemiológica</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Analisa o comportamento epidemiológico de doenças e agravos no município. Realiza investigações de casos e surtos. Coordena e supervisiona atividades municipais de vigilância.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-xs bg-red-500/10 text-red-300 px-2 py-0.5 rounded">Produz: Fichas SINAN</span>
+                            <span class="text-xs bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded">Receberá: Sala de Situação</span>
+                        </div>
+                    </div>
+                    <!-- CIEVS -->
+                    <div class="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center text-sm">🚨</div>
+                            <div>
+                                <div class="text-xs font-bold text-cyan-400 uppercase tracking-widest">CIEVS</div>
+                                <div class="text-xs text-slate-500">Centro de Inteligência Estratégica</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Será o ponto de convergência entre o CISC e a resposta institucional. Quando o CISC estiver operacional, receberá os alertas gerados pelos thresholds do sistema e acionará os protocolos intersetoriais de emergência em saúde.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-xs bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded">Receberá: Alertas CISC</span>
+                            <span class="text-xs bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded">Acionará: Defesa Civil</span>
+                        </div>
+                    </div>
+                    <!-- DCE -->
+                    <div class="bg-amber-500/5 border border-amber-500/20 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center text-sm">🦟</div>
+                            <div>
+                                <div class="text-xs font-bold text-amber-400 uppercase tracking-widest">DCE</div>
+                                <div class="text-xs text-slate-500">Controle de Endemias</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Responsável pelo controle de malária, dengue, leishmaniose e outras endemias. Opera com linha 24h (Malária/Santa Casa). Realiza vigilância ativa com dados de campo que alimentam o Data Lake.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-xs bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded">Produz: Dados de campo</span>
+                            <span class="text-xs bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded">Receberá: Mapas de risco</span>
+                        </div>
+                    </div>
+                    <!-- DANT -->
+                    <div class="bg-purple-500/5 border border-purple-500/20 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-sm">📊</div>
+                            <div>
+                                <div class="text-xs font-bold text-purple-400 uppercase tracking-widest">DANT</div>
+                                <div class="text-xs text-slate-500">Doenças Não Transmissíveis</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Estabelece procedimentos de coleta e análise de dados para agravos crônicos sensíveis ao clima (doenças cardiovasculares, respiratórias). Define variáveis e fluxos periódicos de alimentação do sistema.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-xs bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded">Produz: Dados DANT</span>
+                            <span class="text-xs bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded">Receberá: Análises temporais</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- CIEVS como ponto de convergência -->
+                <div class="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-xl p-5 flex items-start gap-4">
+                    <div class="text-3xl mt-1">🎯</div>
+                    <div>
+                        <div class="font-bold text-cyan-300 mb-1">O CIEVS como Destino Final da Inteligência</div>
+                        <p class="text-slate-300 text-sm leading-relaxed">O CISC não substituirá o DEVS — ele potencializará o CIEVS. Quando o CISC estiver operacional e o motor de alertas identificar um threshold ultrapassado (ex: DDA acima da baseline + chuva > 80mm + maré alta), o sinal chegará ao CIEVS com contexto multivariado completo — eliminando horas de investigação manual e permitindo acionamento imediato dos setores competentes. <em class="text-slate-500">Este é o ciclo que este pipeline foi projetado para fechar.</em></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagrama -->
+            <h2 class="text-2xl font-bold text-white mb-4">Fluxo Técnico: Da Ficha ao Data Warehouse</h2>
+            <p class="text-slate-400 text-sm mb-6">O pipeline abaixo retrata como os registros físicos produzidos pelas equipes da DVE, DCE e DANT são transformados em dados higienizados e carregados no coração do servidor CISC, prontos para cruzamento com dados climáticos e hidrológicos.</p>
 
             <div id="panzoom-container" class="relative bg-black/20 border border-white/10 rounded-xl overflow-hidden flex justify-center" style="height: 650px;">
                 <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 zoom-controls p-2 rounded-lg shadow-xl">
@@ -206,16 +425,17 @@ flowchart TD
     classDef review fill:#064e3b,stroke:#22c55e,stroke-width:2px,color:#d1fae5;
     classDef storage fill:#2e1065,stroke:#a855f7,stroke-width:2px,color:#f3e8ff;
     classDef destination fill:#082f49,stroke:#0ea5e9,stroke-width:2px,color:#e0f2fe;
+    classDef cievs fill:#0c4a6e,stroke:#22d3ee,stroke-width:2px,color:#cffafe;
 
-    subgraph F_INPUT ["1. Fontes de Dados (DEVS)"]
-        A1["📄 Fichas de Notificação Manuais<br>(Epidemiológica / Ambiental)"]:::source
-        A2["📊 Planilhas de Unidades de Saúde<br>(Excel / CSV descentralizado)"]:::source
+    subgraph F_INPUT ["1. Fontes de Dados (DVE · DCE · DANT)"]
+        A1["📄 Fichas de Notificação Manuais<br>(DVE: Epidemiológica / DCE: Endemias)"]:::source
+        A2["📊 Planilhas de Unidades de Saúde<br>(DANT: Agravos crônicos / Excel/CSV)"]:::source
         A3["🖥️ Exportações SINAN/SIVEP<br>(Dados parciais federais)"]:::source
     end
 
     subgraph F_OCR ["2. Digitalização & OCR"]
         B1["📸 Scanner / App Mobile"]:::process
-        B2["🤖 Motor de IA (OCR/HTR)<br>(Cálculo de Confidence Score)"]:::process
+        B2["🤖 Motor de IA (OCR/HTR)<br>(Confidence Score por campo)"]:::process
         
         A1 --> B1 --> B2
     end
@@ -223,7 +443,7 @@ flowchart TD
     subgraph F_HITL ["3. Validação & Human-in-the-Loop"]
         C1{"Score > 90%?"}
         C2["✅ Validação Automática"]:::review
-        C3["👀 Painel de Revisão Web<br>(Correção Humana)"]:::review
+        C3["👀 Painel de Revisão Web<br>(Técnico do DEVS corrige)"]:::review
         
         B2 --> C1
         C1 -->|Sim| C2
@@ -233,7 +453,7 @@ flowchart TD
     subgraph F_TRANSFORM ["4. Motor de Normalização (Python)"]
         D1["🧹 Limpeza de Caracteres<br>(Remoção de lixo e nulos)"]:::process
         D2["🔍 Validação de Identidade<br>(CPF / CNS / Cartão SUS)"]:::process
-        D3["📍 Padronização Geográfica<br>(Ajuste de Logradouros e Bairros)"]:::process
+        D3["📍 Geocodificação<br>(Endereço → Lat/Lon para mapa de risco)"]:::process
         
         C2 --> D1
         C3 --> D1
@@ -244,15 +464,23 @@ flowchart TD
     end
 
     subgraph F_LOAD ["5. Integração ao Coração do CISC"]
-        E1[("🐘 PostgreSQL (DW Estruturado)")]:::storage
-        E2[("🗄️ MinIO (Bucket de Auditoria)")]:::storage
+        E1[("🐘 PostgreSQL/PostGIS<br>(DW Estruturado + Espacial)")]:::storage
+        E2[("🗄️ MinIO (Auditoria / Imagens)")]:::storage
         
         D3 ==>|Carga Higienizada| E1
         B1 -.->|Backup Imagem Original| E2
     end
 
-    %% Orquestração (Implícita pelo Maestro Airflow)
-    O["🌪️ Orquestrador Airflow"]
+    subgraph F_CIEVS ["6. Retorno ao DEVS via CIEVS"]
+        G1["📊 Sala de Situação<br>(Videowall / Superset)"]:::cievs
+        G2["🚨 Motor de Alertas<br>(Threshold clima × saúde)"]:::cievs
+        G3["📢 CIEVS: Acionamento<br>de Protocolos Intersetoriais"]:::cievs
+
+        E1 --> G1 --> G2 --> G3
+    end
+
+    %% Orquestração
+    O["🌪️ Airflow<br>(Orquestrador)"]
     O -.->|Trigger| B2
     O -.->|Trigger| D1
                 </pre>
@@ -266,10 +494,10 @@ flowchart TD
                     <div class="space-y-8">
                         <div class="bg-white/5 p-6 rounded-xl border border-white/10">
                             <h3 class="text-xl font-bold text-red-400 flex items-center gap-2 mb-3">
-                                <span class="text-2xl">📄</span> 1. Ingestão do Caos
+                                <span class="text-2xl">📄</span> 1. Ingestão: DVE, DCE e DANT em Campo
                             </h3>
                             <p class="text-slate-300 leading-relaxed">
-                                O processo começa onde a saúde pública realmente acontece: no papel. Fichas de notificação e planilhas avulsas são coletadas. O desafio aqui é a <b>variabilidade</b> de formatos e a qualidade da caligrafia.
+                                O processo começa onde a saúde pública realmente acontece: no papel e nos computadores das unidades. As equipes da DVE preenchem fichas de notificação, a DCE registra dados de endemias em campo, e a DANT consolida planilhas de agravos crônicos. O desafio é a <b>heterogeneidade</b> de formatos entre os setores.
                             </p>
                         </div>
 
@@ -278,16 +506,16 @@ flowchart TD
                                 <span class="text-2xl">🤖</span> 2. Visão Computacional
                             </h3>
                             <p class="text-slate-300 leading-relaxed">
-                                As imagens são processadas por redes neurais que analisam cada <b>campo individualmente</b>. Em vez de uma nota global, a IA atribui um <b>Índice de Confiança por célula</b>, isolando incertezas.
+                                As imagens são processadas por redes neurais (Florence-2 / PaliGemma 2) que analisam cada <b>campo individualmente</b>. Em vez de uma nota global, a IA atribui um <b>Índice de Confiança por célula</b>, isolando as incertezas para revisão humana cirúrgica.
                             </p>
                         </div>
 
                         <div class="bg-white/5 p-6 rounded-xl border border-white/10">
                             <h3 class="text-xl font-bold text-green-400 flex items-center gap-2 mb-3">
-                                <span class="text-2xl">👀</span> 3. Revisão Cirúrgica (HITL)
+                                <span class="text-2xl">👀</span> 3. Revisão pelo Técnico do DEVS (HITL)
                             </h3>
                             <p class="text-slate-300 leading-relaxed">
-                                O sistema destaca <b>apenas os campos duvidosos</b> para o revisor humano. A validação é cirúrgica, reduzindo drasticamente o tempo de processamento manual.
+                                O sistema destaca <b>apenas os campos duvidosos</b> para o técnico epidemiologista revisar. Quem corrige o dado é o mesmo profissional que o gerou — garantindo contexto clínico e epidemiológico na validação, não apenas lógica computacional.
                             </p>
                         </div>
                     </div>
@@ -299,25 +527,25 @@ flowchart TD
                                 <span class="text-2xl">⚙️</span> 4. Refinaria de Dados
                             </h3>
                             <p class="text-slate-300 leading-relaxed">
-                                Com os dados digitais, o pipeline executa <b>deduplicação</b> e validação cruzada com bases oficiais (Receita/Cartão SUS) usando scripts Python de alto desempenho.
+                                Com os dados digitais, o pipeline executa <b>deduplicação</b> e validação cruzada com bases oficiais (Receita Federal / Cartão SUS) usando scripts Python, garantindo que cada paciente seja contado uma única vez no Data Lake.
                             </p>
                         </div>
 
                         <div class="bg-white/5 p-6 rounded-xl border border-white/10">
                             <h3 class="text-xl font-bold text-purple-400 flex items-center gap-2 mb-3">
-                                <span class="text-2xl">📍</span> 5. Normalização Geográfica
+                                <span class="text-2xl">📍</span> 5. Geocodificação para Mapa de Risco
                             </h3>
                             <p class="text-slate-300 leading-relaxed">
-                                Nomes de ruas e bairros são corrigidos para padrões oficiais, permitindo o cruzamento exato com mapas de risco climático e manchas de inundação.
+                                Endereços de pacientes e notificações são convertidos em coordenadas (Lat/Lon) e indexados no <b>PostGIS</b>. Isso permite sobrepor os agravos às manchas de alagamento, ilhas de calor e IVS — o cruzamento territorial que dá sentido ao mapa da Sala de Situação.
                             </p>
                         </div>
 
-                        <div class="bg-white/5 p-6 rounded-xl border border-white/10">
-                            <h3 class="text-xl font-bold text-sky-400 flex items-center gap-2 mb-3">
-                                <span class="text-2xl">🐘</span> 6. Carga no DW/Datalake
+                        <div class="bg-cyan-500/5 p-6 rounded-xl border border-cyan-500/30">
+                            <h3 class="text-xl font-bold text-cyan-400 flex items-center gap-2 mb-3">
+                                <span class="text-2xl">🚨</span> 6. Retorno ao CIEVS: O Ciclo Completo
                             </h3>
                             <p class="text-slate-300 leading-relaxed">
-                                O dado higienizado é injetado no <b>coração do servidor</b>, pronto para consumo pela Sala de Situação e cruzamento com fontes climáticas agnósticas.
+                                O dado que entrou como ficha manual retorna ao DEVS como <b>inteligência acionável</b>. O CIEVS recebe o alerta cruzado (ex: surto de DDA + chuva intensa + maré alta) com geolocalização precisa dos casos, eliminando horas de investigação manual e acelerando a resposta intersetorial.
                             </p>
                         </div>
                     </div>

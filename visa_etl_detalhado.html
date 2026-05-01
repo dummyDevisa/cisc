@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETL Detalhado VISA - CISC Belém</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        import Panzoom from 'https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.es.js';
+
+        mermaid.initialize({ 
+            startOnLoad: false, 
+            theme: 'dark',
+            themeVariables: {
+                primaryColor: '#00d2ff',
+                primaryTextColor: '#fff',
+                primaryBorderColor: '#3a7bd5',
+                lineColor: '#94a3b8',
+                secondaryColor: '#3a7bd5',
+                tertiaryColor: '#0a0e14'
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await mermaid.run({ querySelector: '.mermaid' });
+                const elem = document.querySelector('.mermaid svg');
+                const container = document.getElementById('panzoom-container');
+
+                if (elem) {
+                    elem.style.maxWidth = 'none';
+                    elem.style.height = '100%';
+                    const panzoom = Panzoom(elem, { maxScale: 5, minScale: 0.3, step: 0.3 });
+
+                    container.addEventListener('wheel', panzoom.zoomWithWheel);
+                    document.getElementById('zoom-in').addEventListener('click', panzoom.zoomIn);
+                    document.getElementById('zoom-out').addEventListener('click', panzoom.zoomOut);
+                    document.getElementById('zoom-reset').addEventListener('click', panzoom.reset);
+                    document.getElementById('fullscreen').addEventListener('click', () => {
+                        if (!document.fullscreenElement) {
+                            container.requestFullscreen().catch(err => {
+                                console.error(`Erro ao entrar em tela cheia: ${err.message}`);
+                            });
+                        } else {
+                            document.exitFullscreen();
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Erro ao renderizar o Mermaid:", error);
+            }
+        });
+    </script>
+
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --accent: #ff007a;
+            --bg-dark: #0a0e14;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.8);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(0, 210, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 122, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .bg-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.4;
+            background: linear-gradient(90deg, var(--bg-dark) 20px, transparent 1%) center, linear-gradient(var(--bg-dark) 20px, transparent 1%) center, rgba(255, 255, 255, 0.05);
+            background-size: 22px 22px;
+        }
+
+        header.site-header {
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo i { -webkit-text-fill-color: var(--primary); }
+
+        
+        
+        
+        
+        /* Navegação Organizada CISC */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .nav-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .group-title {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px 0;
+        }
+
+        .group-title i.fa-chevron-down {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-group:hover .group-title {
+            color: var(--primary);
+        }
+
+        .nav-group:hover i.fa-chevron-down {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .group-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1000;
+        }
+
+        .nav-group:hover .group-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .group-content a {
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--text-dim) !important;
+            font-size: 0.85rem !important;
+            text-decoration: none !important;
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .group-content a:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--primary) !important;
+            padding-left: 20px;
+        }
+
+        .group-content a i {
+            width: 18px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-links { gap: 15px; }
+            .group-title { font-size: 0.8rem; }
+        }
+
+
+            .group-title { font-size: 0.8rem; }
+        }
+
+            .group-title { font-size: 0.75rem; }
+        }
+
+
+        .content-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+
+        h1, h2, h3 { font-family: 'Outfit', sans-serif; }
+
+        footer.site-footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            margin-top: 80px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .zoom-controls {
+            background: rgba(15, 23, 42, 0.9) !important;
+            border: 1px solid var(--border) !important;
+        }
+        .zoom-controls button {
+            color: white !important;
+            background: rgba(255,255,255,0.05) !important;
+        }
+        .zoom-controls button:hover {
+            background: var(--primary) !important;
+            color: var(--bg-dark) !important;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <div class="bg-mesh"></div>
+    <header class="site-header">
+        <a href="index.html" class="logo" style="text-decoration: none;">
+            <i class="fas fa-microchip"></i>
+            <span>CISC BELÉM</span>
+        </a>
+        <nav class="nav-links">
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-layer-group"></i> Estrutura
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="index.html" class=""><i class="fas fa-home"></i> Início / Visão Geral</a>
+                    <a href="etl_arquitetura.html" class=""><i class="fas fa-project-diagram"></i> Arquitetura Core</a>
+                    <a href="schema_linkage.html" class=""><i class="fas fa-database"></i> Schema PostGIS</a>
+                </div>
+            </div>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-microchip"></i> Inteligência
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="devs_etl_detalhado.html" class=""><i class="fas fa-file-medical"></i> Pipeline DEVS</a>
+                    <a href="visa_etl_detalhado.html" class="active"><i class="fas fa-shield-virus"></i> Pipeline VISA</a>
+                    <a href="cisc_ia_modelagem.html" class=""><i class="fas fa-robot"></i> Modelagem IA/HTR</a>
+                    <a href="hitl_devs_arquitetura.html" class=""><i class="fas fa-users-cog"></i> Validação HITL</a>
+                </div>
+            </div>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-eye"></i> Decisão
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="sala_situacao.html" class=""><i class="fas fa-desktop"></i> Sala de Situação</a>
+                    <a href="matriz_alertas.html" class=""><i class="fas fa-exclamation-triangle"></i> Matriz de Alertas</a>
+                    <a href="dashboards_mockups.html" class=""><i class="fas fa-chart-line"></i> Mockups de Dashboards</a>
+                </div>
+            </div>
+            <a href="https://github.com/dummyDevisa/cisc" target="_blank" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-left: 10px;">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </nav>
+    </header>
+
+    
+    
+    
+    
+    
+
+
+
+
+
+    <main class="max-w-7xl mx-auto p-8">
+        <div class="content-card rounded-2xl p-8 mb-8">
+            
+    
+    
+    
+    
+
+
+
+
+
+            <!-- Contexto Institucional do DEVISA -->
+            <div class="mb-10">
+                <h2 class="text-2xl font-bold text-white mb-2">Estrutura Sanitária de Monitoramento Ambiental</h2>
+                <p class="text-slate-400 mb-6 text-sm">Divisões do DEVISA atuantes na matriz de dados de clima e saúde</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <!-- VISAMB (DVSE) -->
+                    <div class="bg-blue-500/5 border border-blue-500/20 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-sm">💧</div>
+                            <div>
+                                <div class="text-xs font-bold text-blue-400 uppercase tracking-widest">VISAMB (DVSE)</div>
+                                <div class="text-xs text-slate-500">Vigilância Ambiental em Saúde</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Núcleo vital para o CISC. Realiza o controle e análise da qualidade da água (VIGIAGUA), monitoramento do ar (VIGIAR) e análise de solo em cenários de risco, através de coletas programadas.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-xs bg-blue-500/10 text-blue-300 px-2 py-0.5 rounded">Produz: Coletas VIGIAGUA</span>
+                            <span class="text-xs bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded">Recebe: Alertas de Chuva Extrema</span>
+                        </div>
+                    </div>
+                    
+                    <!-- DVSA -->
+                    <div class="bg-green-500/5 border border-green-500/20 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-sm">🍽️</div>
+                            <div>
+                                <div class="text-xs font-bold text-green-400 uppercase tracking-widest">DVSA (Casa do Açaí)</div>
+                                <div class="text-xs text-slate-500">Vigilância de Alimentos</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Investiga Doenças Transmitidas por Alimentos (DTA) em conjunto com a Epidemiologia. Monitora proativamente a qualidade sanitária do açaí e envia amostras para processamento laboratorial para evitar casos de Chagas e DDA.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-xs bg-green-500/10 text-green-300 px-2 py-0.5 rounded">Produz: Inspeções DTA</span>
+                            <span class="text-xs bg-sky-500/10 text-sky-300 px-2 py-0.5 rounded">Recebe: Alertas de Onda de Calor</span>
+                        </div>
+                    </div>
+                    
+                    <!-- LACEN -->
+                    <div class="bg-purple-500/5 border border-purple-500/20 rounded-xl p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center text-sm">🧪</div>
+                            <div>
+                                <div class="text-xs font-bold text-purple-400 uppercase tracking-widest">LACEN / FMS</div>
+                                <div class="text-xs text-slate-500">Apoio Laboratorial</div>
+                            </div>
+                        </div>
+                        <p class="text-slate-300 text-xs leading-relaxed mb-3">Processa amostras de água de soluções alternativas (poços) e sistemas de abastecimento, além de amostras de alimentos. Retorna laudos conclusivos sobre contaminação biológica e química.</p>
+                        <div class="flex flex-wrap gap-1">
+                            <span class="text-xs bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded">Produz: Laudos Positivos/Negativos</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cruzamento CISC x VISA -->
+                <div class="bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-500/20 rounded-xl p-5 flex items-start gap-4">
+                    <div class="text-3xl mt-1">🔄</div>
+                    <div>
+                        <div class="font-bold text-green-300 mb-1">CISC e a Inteligência Ambiental (One Health)</div>
+                        <p class="text-slate-300 text-sm leading-relaxed">Onde entra a inovação do CISC? A relação entre clima e qualidade da água, do ar e dos alimentos ocorre de formas diretas e indiretas. O CISC <strong>automatizará o cruzamento geoespacial e climático</strong>: por exemplo, prever a proliferação do vetor da Doença de Chagas em safras de açaí durante ondas de calor (DVSA), ou gerar gatilhos para testes de qualidade da água (VISAMB) após chuvas severas que sobrecarregam o saneamento. Isso antecipa surtos antes que as pessoas adoeçam e lotem as UPAs.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagrama ETL -->
+            <h2 class="text-2xl font-bold text-white mb-4">Fluxo Técnico: Da Inspeção Sanitária ao Data Lake</h2>
+            <p class="text-slate-400 text-sm mb-6">O pipeline abaixo reflete o ciclo do dado sanitário: da captura em campo (via preenchimento de autos ou laudos laboratoriais), passando pela ingestão e georreferenciamento, até integrar o motor de decisão climática.</p>
+
+            <div id="panzoom-container" class="relative bg-black/20 border border-white/10 rounded-xl overflow-hidden flex justify-center" style="height: 650px;">
+                <div class="absolute top-4 right-4 z-10 flex flex-col gap-2 zoom-controls p-2 rounded-lg shadow-xl">
+                    <button id="zoom-in" class="w-8 h-8 rounded font-bold transition-all" title="Aumentar Zoom">+</button>
+                    <button id="zoom-out" class="w-8 h-8 rounded font-bold transition-all" title="Diminuir Zoom">-</button>
+                    <button id="zoom-reset" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Resetar Zoom">1:1</button>
+                    <button id="fullscreen" class="w-8 h-8 rounded text-xs font-bold transition-all" title="Tela Cheia">⛶</button>
+                </div>
+                
+                <pre class="mermaid cursor-move w-full h-full flex items-center justify-center">
+flowchart TD
+    %% Estilos
+    classDef source fill:#064e3b,stroke:#22c55e,stroke-width:2px,color:#d1fae5;
+    classDef process fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#dbeafe;
+    classDef review fill:#4a044e,stroke:#d946ef,stroke-width:2px,color:#fae8ff;
+    classDef storage fill:#2e1065,stroke:#a855f7,stroke-width:2px,color:#f3e8ff;
+    classDef final fill:#451a03,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+
+    subgraph V_INPUT ["1. Aquisição de Dados Sanitários"]
+        direction LR
+        V1["📋 Laudos de Inspeção<br>(DVSA/DTA, Casa do Açaí)"]:::source
+        V2["💧 Boletins VIGIAGUA<br>(VISAMB)"]:::source
+        V3["🧪 Laudos Analíticos<br>(LACEN)"]:::source
+    end
+
+    subgraph V_INGESTION ["2. Ingestão e Processamento Automático"]
+        I1["🤖 IA / Extração de Texto<br>(Leitura de Laudos PDF/Imagens)"]:::process
+        I2["🔗 Conectores API<br>(Extração SISAGUA/Sistemas Federais)"]:::process
+    end
+
+    subgraph V_HITL ["3. Revisão HITL (Human-in-the-Loop)"]
+        H1["👨‍💻 Interface de Validação<br>Técnicos VISAMB / DVSA confirmam os parâmetros"]:::review
+    end
+
+    subgraph V_LAKE ["4. Data Lake & Warehouse (Servidor CISC)"]
+        D1[("🗄️ MinIO (Object Storage)<br>Armazena PDFs originais (Laudos/Autos)")]:::storage
+        D2[("🐘 PostgreSQL + PostGIS<br>Dados Estruturados + Geometria do Ponto de Coleta")]:::storage
+    end
+
+    subgraph V_OUTPUT ["5. Motor de Decisão Integrado"]
+        O1{"⚙️ Cruzamento Multivariado<br>(Grafana / R)"}:::final
+        O2["🚨 Alerta Hídrico / Sanitário<br>Disparado para Comissão"]:::final
+    end
+
+    V1 -->|Scanner / App| I1
+    V3 -->|Scanner / PDF| I1
+    V2 -->|Exportação / API| I2
+
+    I1 -->|Dados Extraídos| H1
+    I2 -->|JSON Estruturado| D2
+
+    H1 -->|Aprova - Alta Confianca| D2
+    H1 -->|Salva Cópia Arquivo| D1
+
+    D2 -->|Consulta Espacial| O1
+    O1 -->|Gatilho Cruzado Atingido| O2
+
+    %% Ligações Climáticas Externas
+    C1["🌧️ Precipitação (CEMADEN)"] -.-> O1
+    C2["🌡️ Ondas de Calor (INMET)"] -.-> O1
+                </pre>
+            </div>
+
+            <!-- Detalhamento Técnico -->
+            <div class="mt-12">
+                <h3 class="text-2xl font-bold text-white mb-6">Detalhamento Técnico: Como Funciona o Datalake Sanitário</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6">
+                        <div class="text-primary text-2xl mb-4"><i class="fas fa-file-invoice"></i></div>
+                        <h4 class="font-bold text-white mb-2">Ingestão Híbrida de Laudos</h4>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            A realidade da VISA envolve muitos autos e laudos físicos ou PDFs não estruturados (ex: emissões do LACEN). O pipeline utiliza modelos de IA locais (OCR/HTR) para extrair os parâmetros-chave: local da coleta, data, presença de coliformes, padrão rotulagem.
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6">
+                        <div class="text-primary text-2xl mb-4"><i class="fas fa-map-marker-alt"></i></div>
+                        <h4 class="font-bold text-white mb-2">PostGIS e Zonas de Risco</h4>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Diferente da Epidemiologia que agrupa por bairro, a Vigilância Ambiental trabalha com <strong>pontos geográficos precisos</strong> (um poço artesiano, uma batedeira de açaí). O PostGIS armazena a localização exata, permitindo ao CISC cruzar com as zonas de alagamento topográfico.
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border border-white/10 rounded-xl p-6">
+                        <div class="text-primary text-2xl mb-4"><i class="fas fa-user-check"></i></div>
+                        <h4 class="font-bold text-white mb-2">Validação HITL (VISAMB)</h4>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Dados de qualidade da água ou contaminação em alimentos têm grande impacto regulatório. Por isso, a camada HITL garante que um inspetor do VISAMB ou DVSA revise as extrações automatizadas antes delas entrarem no DW e gerarem alertas falsos para o gabinete de crise.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Centro de Informação em Saúde e Clima (CISC) — Belém/PA</p>
+    </footer>
+</body>
+</html>

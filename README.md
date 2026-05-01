@@ -1,6 +1,6 @@
 # CISC Belém — Centro de Informação em Saúde e Clima
 
-> **SESMA · Departamento de Vigilância em Saúde (DEVS) · Ministério da Saúde**  
+> **SESMA · Departamento de Vigilância em Saúde (DEVS) · Departamento de Vigilância Sanitária (DEVISA) · Ministério da Saúde**  
 > Inauguração prevista: Junho/2026 · Operação plena: Agosto/2026
 
 ## O que é o CISC
@@ -10,10 +10,9 @@ criada pela parceria entre o **Ministério da Saúde** (via CGClima/SVSA) e a
 **Secretaria Municipal de Saúde de Belém** (SMS), com a missão de **antecipar e
 mitigar os impactos de eventos climáticos extremos sobre a saúde da população**.
 
-O CISC não é um sistema de TI. É um **organismo de inteligência** que integra
-cinco eixos profissionais para transformar dados brutos de saúde, clima e
-território em **alertas precoces, protocolos de resposta e decisões em tempo real**
-para a gestão pública municipal.
+O CISC não é apenas um sistema de TI, mas a aplicação prática do conceito de **Saúde Única (One Health)**, reconhecendo que a saúde humana está indissociavelmente ligada à saúde do ambiente. O cruzamento de dados de vigilância em saúde (epidemiológica, sanitária e ambiental) com gatilhos climáticos é uma das estratégias mais avançadas e modernas na inteligência em saúde pública hoje.
+
+Trata-se de um **organismo de inteligência** que integra cinco eixos profissionais para transformar dados brutos de saúde, clima e território em **alertas precoces, protocolos de resposta e decisões em tempo real** para a gestão pública municipal.
 
 ## Os 5 Eixos Profissionais do CISC
 
@@ -65,9 +64,18 @@ o órgão que recebe, processa e distribui inteligência para toda a Sala de Sit
 A arquitetura foi concebida como um **núcleo de ingestão universal**: qualquer fonte
 relevante pode ser conectada, independentemente de origem, formato ou protocolo.
 
-O **DEVS** é a primeira e mais crítica fonte. À medida que o CISC amadurece, novos
-parceiros serão conectados: agências meteorológicas, institutos de pesquisa, defesa
-civil, vigilância ambiental, universidades e redes de sensores urbanos.
+O **DEVS** e o **DEVISA** são as duas primeiras e mais críticas fontes institucionais
+do CISC — ambas integrantes da comissão gestora do Centro:
+
+- **DEVS** (DVE, DCE, CIEVS, DANT): dados epidemiológicos, notificações de surtos,
+  fichas de campo, exportações SINAN/e-SUS
+- **DEVISA** (DVSA, DVSE/VISAMB): dados de qualidade da água e do ar (VIGIAGUA/VIGIAR),
+  surtos de Doenças Transmitidas por Alimentos (DTA), monitoramento de açaí/LACEN,
+  laudos de inspeção sanitária ambiental
+
+À medida que o CISC amadurece, novos parceiros serão conectados: agências
+meteorológicas, institutos de pesquisa, Defesa Civil, universidades e redes de
+sensores urbanos.
 
 ### Particularidades de Belém: Integração Hidrológica
 
@@ -107,12 +115,13 @@ de saúde antes da emergência se instalar**.
 
 | Artefato | Descrição |
 |---|---|
-| [**Arquitetura Agnóstica**](etl_arquitetura.html) | Fluxograma macro do servidor centralizador (DEVS, INMET, CEMADEN, etc.). |
+| [**Arquitetura Agnóstica**](etl_arquitetura.html) | Fluxograma macro do servidor centralizador (DEVS, DEVISA, INMET, CEMADEN, etc.). |
 | [**Pipeline DEVS**](devs_etl_detalhado.html) | Do papel ao dado estruturado via OCR, HITL e Python. |
+| [**Pipeline VISA**](visa_etl_detalhado.html) | Dados de DTA, VIGIAGUA, qualidade do ar e monitoramento de açaí. |
 | [**Arquitetura HITL**](hitl_devs_arquitetura.html) | Motor de decisão IA + humanos (Learning Loop). |
 | [**Estratégia de IA/HTR**](cisc_ia_modelagem.html) | Modelos, hardware e fine-tuning local. |
 | [**Sala de Situação**](sala_situacao.html) | Videowall, painéis real-time e protocolo de alertas. |
-| [**Matriz de Alertas**](matriz_alertas.html) | Gatilhos climáticos × thresholds epidemiológicos. |
+| [**Matriz de Alertas**](matriz_alertas.html) | Gatilhos climáticos × thresholds epidemiológicos × sanitários. |
 
 ## Documentação de Referência
 

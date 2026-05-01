@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Situação CISC - Monitoramento Belém</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Leaflet & ApexCharts -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #475569;
+            --accent: #e11d48;
+            --warning: #d97706;
+            --bg-light: #f8fafc;
+            --panel-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-dim: #64748b;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Mission Control Header */
+        header.situation-header {
+            height: 80px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .header-left { display: flex; align-items: center; gap: 2rem; }
+        .system-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .status-badge {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse 2s infinite;
+        }
+
+        /* Grid Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1200px;
+            grid-template-rows: 1fr;
+            gap: 15px;
+            padding: 15px;
+            height: calc(100vh - 160px); /* Ajustado para dar espaço à barra de status */
+            box-sizing: border-box;
+        }
+
+        /* Status Row */
+        /* Status da Rede de Coleta */
+        .network-status-bar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 4px 20px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        /* Leaflet Fixes */
+        .leaflet-interactive:focus,
+        path.leaflet-interactive:focus {
+            outline: none !important;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        }
+        .leaflet-popup-tip {
+            display: none;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+        .status-online { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse-green 2s infinite; }
+        
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .map-pulse {
+            width: 12px;
+            height: 12px;
+            background: #3b82f6;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
+            animation: pulse-blue 1.5s infinite;
+        }
+
+        @keyframes pulse-blue {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { transform: scale(1.2); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        /* Semaforo Animations */
+        @keyframes semaforo-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        @keyframes semaforo-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+        @keyframes semaforo-orange {
+            0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(249, 115, 22, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        }
+        @keyframes semaforo-blue {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        .map-icon-pulse {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            filter: drop-shadow(0 0 4px currentColor);
+            animation: icon-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        }
+
+        @keyframes icon-pulse {
+            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            50% { transform: scale(1.2); opacity: 0.8; filter: brightness(1.3); }
+            100% { transform: scale(1); opacity: 1; filter: brightness(1); }
+        }
+
+        /* Precision Command KPI System - Version 8.0 (Modernized) */
+        .status-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 0 auto 20px auto;
+            padding: 0 15px;
+            width: 100%;
+            max-width: 2400px; 
+            box-sizing: border-box;
+            z-index: 100;
+            position: relative;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #f1f5f9;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            height: 140px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-card:hover {
+            box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.12);
+            transform: translateY(-4px);
+            border-color: #cbd5e1;
+        }
+
+        .status-card.active {
+            border-width: 3px;
+            background: #fcfdfe;
+        }
+
+        /* Card Elements */
+        .card-header-q {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .dept-label-q {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+        .update-tag-q {
+            font-size: 8px;
+            color: #94a3b8;
+            font-weight: 700;
+            background: #f8fafc;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .card-body-q {
+            flex-grow: 1;
+            display: grid;
+            grid-template-columns: 50px 1fr auto;
+            align-items: center;
+            gap: 12px;
+            padding: 0 14px;
+        }
+        
+        .axis-icon-wrap {
+            width: 40px;
+            height: 40px;
+            background: #f8fafc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .data-content-q {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .data-value-q {
+            font-size: 32px;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        .data-unit-q  { font-size: 12px; font-weight: 700; color: #94a3b8; }
+        
+        .data-trend-q {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background: #f8fafc;
+        }
+        .trend-up   { color: #ef4444; background: #fef2f2; }
+        .trend-down { color: #10b981; background: #ecfdf5; }
+
+        /* Alert Badges */
+        .alert-badge-q {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 0;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+            width: 100%;
+        }
+
+        /* Color Themes */
+        #btn-epi .axis-icon-wrap { color: #ef4444; background: #fef2f2; }
+        #btn-visa .axis-icon-wrap { color: #10b981; background: #ecfdf5; }
+        #btn-clima .axis-icon-wrap { color: #eab308; background: #fefce8; }
+        #btn-hidro .axis-icon-wrap { color: #10b981; background: #ecfdf5; }
+
+        .badge-epi-q   { background: #ef4444; } /* Vermelho - Emergência */
+        .badge-visa-q  { background: #10b981; } /* Verde - Normalidade */
+        .badge-clima-q { background: #facc15; color: #713f12; } /* Amarelo - Atenção */
+        .badge-hidro-q { background: #10b981; } /* Verde - Normalidade */
+
+        .status-card.active#btn-epi  { border-color: #ef4444; }
+        .status-card.active#btn-visa { border-color: #10b981; }
+        .status-card.active#btn-clima{ border-color: #facc15; }
+        .status-card.active#btn-hidro{ border-color: #10b981; }
+
+        .status-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .status-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .status-value {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+
+        /* Map Section */
+        .map-section {
+            position: relative;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        #map { width: 100%; height: 100%; background: #f8fafc; }
+
+        /* Widgets & HUD */
+        .hud-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 12px;
+        }
+
+        .hud-tag {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 800;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .hud-tag:hover {
+            transform: translateY(-2px);
+            background: rgba(15, 23, 42, 0.9);
+            border-color: rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+        }
+
+        .hud-tag.active {
+            color: white;
+            border-color: currentColor;
+            box-shadow: 0 0 20px -5px currentColor;
+        }
+
+        .hud-tag .status-indicator {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #475569;
+            transition: all 0.3s;
+        }
+
+        .hud-tag.active .status-indicator {
+            background: currentColor;
+            box-shadow: 0 0 8px currentColor;
+            animation: pulse-hud 2s infinite;
+        }
+
+        @keyframes pulse-hud {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Animated Polylines */
+        @keyframes dash-flow {
+            to {
+                stroke-dashoffset: -20;
+            }
+        }
+        .dash-flow {
+            stroke-dasharray: 10, 10;
+            animation: dash-flow 3s linear infinite;
+        }
+
+
+        .legend-box {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            width: 220px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* Right Panels */
+        .data-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px; /* Reduzido de 20px */
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* Reduzido de 20px */
+            overflow: hidden; /* Garante que nada saia da caixa */
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem; /* Reduzido */
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .big-metric {
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .big-number {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3rem; /* Reduzido de 3.5rem */
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text-main);
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Utility */
+        .chart-container { 
+            flex-grow: 1; 
+            min-height: 0; /* Importante para o flexbox conter o overflow */
+            width: 100%; 
+        }
+        .grid-mini { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            flex-grow: 1; 
+            min-height: 0;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        .range-selector {
+            display: flex;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .range-btn {
+            font-size: 8px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #64748b;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .range-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #1e293b;
+        }
+
+        .range-btn.active {
+            background: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .data-panel .flex.justify-between.items-center {
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            margin-bottom: 12px;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <header class="situation-header">
+        <div class="header-left">
+            <div class="system-title">
+                <i class="fas fa-microchip text-primary"></i>
+                CISC <span class="font-light">BELÉM</span> 
+                <span class="text-dim font-thin mx-2">|</span> 
+                <span class="text-sm tracking-widest font-semibold text-dim">SALA DE SITUAÇÃO</span>
+            </div>
+            <div class="status-badge">MONITORAMENTO ATIVO</div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="hidden xl:flex items-center gap-4 border-r border-white/10 pr-6 mr-6">
+                <div class="text-right">
+                    <div class="text-[9px] text-dim uppercase">Nível de Alerta</div>
+                    <div class="text-xs font-bold text-yellow-400">ESTADO DE ATENÇÃO</div>
+                </div>
+                <div class="w-10 h-10 rounded-full border-2 border-yellow-400/30 flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-400 text-xs"></i>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-[10px] text-dim uppercase">Status do Airflow</div>
+                <div class="text-xs font-bold text-green-400 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> SINCRONIZADO
+                </div>
+            </div>
+            <div class="text-right border-l border-white/10 pl-6">
+                <div id="clock" class="font-mono text-xl font-bold text-white tracking-tighter">09:30:51</div>
+                <div class="text-[10px] text-dim uppercase">01 MAIO 2026</div>
+            </div>
+            <div class="flex gap-2 ml-4">
+                <a href="index.html" class="p-2 bg-white/5 hover:bg-white/10 rounded border border-white/10 text-xs text-dim transition-all" title="Voltar para Documentação">
+                    <i class="fas fa-book"></i> Docs
+                </a>
+                <div class="p-2 bg-primary/20 rounded border border-primary/50 text-xs text-primary font-bold">
+                    OPERACIONAL
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="network-status-bar bg-slate-50">
+        <div class="flex items-center cursor-pointer hover:bg-white px-2 py-1 rounded transition-all" onclick="simulateNetworkMapping('ubs')">
+            <span class="status-dot status-online"></span> 
+            <span class="font-bold ml-2 text-slate-700">86 Unidades Básicas (UBS/USF)</span>
+        </div>
+        <div class="flex items-center border-l pl-4 cursor-pointer hover:bg-white px-2 py-1 rounded transition-all" onclick="simulateNetworkMapping('upa')">
+            <span class="status-dot status-online"></span> 
+            <span class="font-bold ml-2 text-slate-700">05 UPAs Municipais</span>
+        </div>
+        <div class="flex items-center border-l pl-4 cursor-pointer hover:bg-white px-2 py-1 rounded transition-all" onclick="simulateNetworkMapping('hosp')">
+            <span class="status-dot status-online"></span> 
+            <span class="font-bold ml-2 text-slate-700">03 Hospitais</span>
+        </div>
+        <div class="flex items-center border-l pl-4 cursor-pointer hover:bg-white px-2 py-1 rounded transition-all" onclick="simulateNetworkMapping('caps')">
+            <span class="status-dot status-online"></span> 
+            <span class="font-bold ml-2 text-slate-700">12 CAPS/CEMECs</span>
+        </div>
+        <div class="flex items-center border-l pl-4 text-[9px] italic text-dim">
+            Monitorando: 08 Distritos Administrativos (DABEL → DAGUA)
+        </div>
+    </div>
+
+    <div class="status-row">
+        <!-- EPI STATUS -->
+        <div class="status-card active" id="btn-epi" onclick="filterMapLayers('epi')">
+            <div class="card-header-q">
+                <div class="dept-label-q">Vigilância em Saúde</div>
+                <div class="update-tag-q">Tempo Real</div>
+            </div>
+            <div class="card-body-q">
+                <div class="axis-icon-wrap">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <div class="data-content-q">
+                    <div class="data-value-q">415 <span class="data-unit-q">casos</span></div>
+                </div>
+                <div class="data-trend-q trend-up">
+                    <i class="fas fa-arrow-up"></i> 22%
+                </div>
+            </div>
+            <div class="alert-badge-q badge-epi-q">
+                <i class="fas fa-exclamation-circle"></i> EMERGÊNCIA
+            </div>
+        </div>
+
+        <!-- VISA STATUS -->
+        <div class="status-card" id="btn-visa" onclick="filterMapLayers('visa')">
+            <div class="card-header-q">
+                <div class="dept-label-q">Vigilância Sanitária</div>
+                <div class="update-tag-q">08:00</div>
+            </div>
+            <div class="card-body-q">
+                <div class="axis-icon-wrap">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="data-content-q">
+                    <div class="data-value-q">92 <span class="data-unit-q">%</span></div>
+                </div>
+                <div class="data-trend-q trend-down">
+                    <i class="fas fa-check"></i> OK
+                </div>
+            </div>
+            <div class="alert-badge-q badge-visa-q">
+                <i class="fas fa-check-circle"></i> NORMALIDADE
+            </div>
+        </div>
+
+        <!-- CLIMA STATUS -->
+        <div class="status-card" id="btn-clima" onclick="filterMapLayers('clima')">
+            <div class="card-header-q">
+                <div class="dept-label-q">Inteligência Meteo.</div>
+                <div class="update-tag-q">Atualizado</div>
+            </div>
+            <div class="card-body-q">
+                <div class="axis-icon-wrap">
+                    <i class="fas fa-sun"></i>
+                </div>
+                <div class="data-content-q">
+                    <div class="data-value-q">11+ <span class="data-unit-q">UV</span></div>
+                </div>
+                <div class="data-trend-q">
+                    ESTÁVEL
+                </div>
+            </div>
+            <div class="alert-badge-q badge-clima-q">
+                <i class="fas fa-exclamation-circle"></i> ATENÇÃO
+            </div>
+        </div>
+
+        <!-- HIDRO STATUS -->
+        <div class="status-card" id="btn-hidro" onclick="filterMapLayers('hidro')">
+            <div class="card-header-q">
+                <div class="dept-label-q">Monitoramento Hidro.</div>
+                <div class="update-tag-q">Online</div>
+            </div>
+            <div class="card-body-q">
+                <div class="axis-icon-wrap">
+                    <i class="fas fa-water"></i>
+                </div>
+                <div class="data-content-q">
+                    <div class="data-value-q">3.45 <span class="data-unit-q">m</span></div>
+                </div>
+                <div class="data-trend-q trend-down">
+                    NORMAL
+                </div>
+            </div>
+            <div class="alert-badge-q badge-hidro-q">
+                <i class="fas fa-info-circle"></i> NORMALIDADE
+            </div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- LEFT: LARGE MAP -->
+        <main class="map-section">
+            <div class="hud-overlay">
+                <div class="hud-tag active" id="hud-epi" style="color: #ef4444;" onclick="filterMapLayers('epi')">
+                    <span class="status-indicator"></span>
+                    <i class="fas fa-heartbeat"></i>
+                    EPIDEMIOLOGIA
+                </div>
+                <div class="hud-tag" id="hud-visa" style="color: #10b981;" onclick="filterMapLayers('visa')">
+                    <span class="status-indicator"></span>
+                    <i class="fas fa-shield-alt"></i>
+                    SANITÁRIA
+                </div>
+                <div class="hud-tag" id="hud-clima" style="color: #f97316;" onclick="filterMapLayers('clima')">
+                    <span class="status-indicator"></span>
+                    <i class="fas fa-sun"></i>
+                    CLIMA
+                </div>
+                <div class="hud-tag" id="hud-hidro" style="color: #3b82f6;" onclick="filterMapLayers('hidro')">
+                    <span class="status-indicator"></span>
+                    <i class="fas fa-water"></i>
+                    HIDRO
+                </div>
+            </div>
+            <div id="map"></div>
+            
+            <!-- Botão Captura Coordenada - Movido para a esquerda para não conflitar com a legenda -->
+            <div id="coord-picker-btn" onclick="toggleCoordPicker()" class="absolute bottom-4 left-4 z-[1001] bg-white/80 backdrop-blur-md p-2 rounded-full border border-slate-200 shadow-lg cursor-pointer hover:bg-white transition-all flex items-center justify-center" title="Capturar Coordenadas">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-slate-600"><circle cx="12" cy="12" r="10"></circle><line x1="22" y1="12" x2="18" y2="12"></line><line x1="6" y1="12" x2="2" y2="12"></line><line x1="12" y1="6" x2="12" y2="2"></line><line x1="12" y1="22" x2="12" y2="18"></line></svg>
+            </div>
+
+            <!-- Display Coordenadas -->
+            <div id="coord-display" class="hidden absolute bottom-16 left-4 z-[1001] bg-slate-900 text-white text-[10px] px-3 py-2 rounded-lg shadow-2xl flex items-center gap-3">
+                <span id="coord-text">0.000, 0.000</span>
+                <button onclick="copyCoords()" class="bg-blue-600 px-2 py-0.5 rounded hover:bg-blue-500 transition-colors font-bold">COPIAR</button>
+            </div>
+            <div class="legend-box">
+                <div class="text-[10px] font-bold text-dim uppercase mb-2">Visão Situacional Integrada</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center gap-2 text-[10px]"><span class="w-2 h-2 rounded bg-red-600"></span> Arboviroses</div>
+                    <div class="flex items-center gap-2 text-[10px]"><span class="w-2 h-2 rounded bg-green-500"></span> VISA</div>
+                    <div class="flex items-center gap-2 text-[10px]"><span class="w-2 h-2 rounded bg-orange-500"></span> Calor</div>
+                    <div class="flex items-center gap-2 text-[10px]"><span class="w-2 h-2 rounded bg-blue-500"></span> Hidro</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT: 4 DATA-RICH PANELS (HIGH DENSITY) -->
+        <div class="grid grid-cols-2 grid-rows-2 gap-[12px] h-full overflow-hidden">
+            
+            <!-- PANEL 1: VIGILÂNCIA EM SAÚDE (DEVS / CIEVS) -->
+            <aside class="data-panel min-h-0 flex flex-col" style="border-top: 4px solid #ef4444; padding: 15px;">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-shield-virus text-red-600"></i>
+                        <span class="text-[12px] font-bold uppercase tracking-wider">Vigilância em Saúde (DEVS/CIEVS)</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="range-selector bg-slate-200/50">
+                            <div onclick="updateDataRange(7, this, 'epi')" class="range-btn active">7D</div>
+                            <div onclick="updateDataRange(15, this, 'epi')" class="range-btn">15D</div>
+                            <div onclick="updateDataRange(30, this, 'epi')" class="range-btn">30D</div>
+                        </div>
+                        <div class="flex gap-2">
+                            <span class="text-[9px] bg-red-600 text-white px-2 py-0.5 rounded font-bold border border-red-700 shadow-sm">EMERGÊNCIA</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Strategic KPIs Grid -->
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                    <div id="val-dda" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">DDA (Diarreica)</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-red-600 text-white px-2 py-0.5 rounded text-[11px]">415</span>
+                            <span class="text-[9px] text-red-500 font-normal">↑50%</span>
+                        </div>
+                    </div>
+                    <div id="val-arbo" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Arboviroses</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-orange-500 text-white px-2 py-0.5 rounded text-[11px]">89</span>
+                        </div>
+                    </div>
+                    <div id="val-lepto" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Leptospirose</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-red-600 text-white px-2 py-0.5 rounded text-[11px]">12</span>
+                        </div>
+                    </div>
+                    <div id="val-mort" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Mort. Calor</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]">02</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Graphic Area (Communicable Diseases) -->
+                <div class="flex-1 min-h-0 bg-slate-50/50 rounded-lg p-2 border border-slate-100 relative">
+                    <div class="absolute top-1 right-2 text-[8px] bg-red-100 text-red-700 px-1 border border-red-200 rounded font-bold z-10 animate-pulse">CUSUM: ALARME ESTATÍSTICO</div>
+                    <div class="flex justify-between mb-1">
+                        <span class="text-[10px] font-bold text-slate-600">Síndromes Respiratórias vs Arboviroses</span>
+                        <span class="text-[9px] font-bold text-dim">Limiares: <span class="text-yellow-600">50</span> / <span class="text-orange-600">80</span> / <span class="text-red-600">110</span></span>
+                    </div>
+                    <div id="arboviroses-chart" style="height: 140px;"></div>
+                </div>
+
+                <!-- Standardized Footer: EPI -->
+                <div class="mt-4 grid grid-cols-2 gap-4 border-t pt-3">
+                    <div>
+                        <div class="text-[9px] font-bold text-dim uppercase mb-2">Monitoramento por Distrito (SESMA)</div>
+                        <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[9px]">
+                            <div class="flex justify-between"><span>DABEL:</span><span class="text-green-600 font-bold">OK</span></div>
+                            <div class="flex justify-between"><span>DAENT:</span><span class="text-green-600 font-bold">OK</span></div>
+                            <div class="flex justify-between"><span>DAICO:</span><span class="text-green-600 font-bold">OK</span></div>
+                            <div class="flex justify-between"><span>DAOUT:</span><span class="text-orange-600 font-bold">AVISO</span></div>
+                            <div class="flex justify-between"><span>DAMOS:</span><span class="text-green-600 font-bold">OK</span></div>
+                            <div class="flex justify-between"><span>DAECO:</span><span class="text-green-600 font-bold">OK</span></div>
+                            <div class="flex justify-between"><span>DBEN:</span><span class="text-green-600 font-bold">OK</span></div>
+                            <div class="flex justify-between"><span>DAGUA:</span><span class="text-green-600 font-bold">OK</span></div>
+                        </div>
+                    </div>
+                    <!-- Protocol ALWAYS on the right -->
+                    <div class="flex flex-col">
+                        <div class="rounded border border-red-200 overflow-hidden shadow-sm">
+                            <div class="bg-red-600 px-2 py-1 text-[9px] font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fas fa-exclamation-triangle animate-pulse"></i> Protocolo de Emergência (Nível 4)
+                            </div>
+                            <div class="bg-red-50 p-2 text-[10px] text-red-900 leading-tight">
+                                Gabinete de Crise Ativado. Protocolo Intersetorial em execução. Mobilização total de leitos e comunicação de risco.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- PANEL 2: SANITÁRIA (DEVISA) -->
+            <aside class="data-panel min-h-0 flex flex-col" style="border-top: 4px solid #10b981; padding: 15px;">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-microscope text-green-600"></i>
+                        <span class="text-[12px] font-bold uppercase tracking-wider">Vigilância Sanitária (DEVISA)</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="range-selector bg-slate-200/50">
+                            <div onclick="updateDataRange(7, this, 'visa')" class="range-btn active">7D</div>
+                            <div onclick="updateDataRange(15, this, 'visa')" class="range-btn">15D</div>
+                            <div onclick="updateDataRange(30, this, 'visa')" class="range-btn">30D</div>
+                        </div>
+                        <span class="text-[9px] bg-green-500 text-white px-2 py-0.5 rounded font-bold border border-green-600 shadow-sm">NORMALIDADE</span>
+                    </div>
+                </div>
+
+                <!-- Mini KPIs Grid (VIGIAGUA/VIGIAR/LACEN) -->
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                    <div id="val-lacen" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Açaí (PNMQSA)</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]">14</span>
+                        </div>
+                    </div>
+                    <div id="val-vigiar" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">IQAr (VIGIAR)</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]">38</span>
+                        </div>
+                    </div>
+                    <div id="val-vigiagua" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">VIGIAGUA Conf.</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]">92%</span>
+                        </div>
+                    </div>
+                    <div id="val-dta" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Surtos DTA</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-red-600 text-white px-2 py-0.5 rounded text-[11px]">01</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Graphic Area -->
+                <div class="flex-1 min-h-0 bg-slate-50/50 rounded-lg p-2 border border-slate-100">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-[10px] font-bold text-slate-600">Conformidade VIGIAGUA (%)</span>
+                        <span class="text-[9px] font-bold text-dim">Limiares: <span class="text-yellow-600">90%</span> / <span class="text-orange-600">85%</span> / <span class="text-red-600">80%</span></span>
+                    </div>
+                    <div id="visa-chart" style="height: 140px;"></div>
+                </div>
+
+                <!-- Standardized Footer: VISA -->
+                <div class="mt-4 grid grid-cols-2 gap-4 border-t pt-3">
+                    <div>
+                        <div class="text-[9px] font-bold text-dim uppercase mb-2">Status Laboratorial (LACEN)</div>
+                        <div class="space-y-1 text-[9px]">
+                            <div class="flex justify-between"><span>Coletas Ativas:</span><span class="text-slate-700 font-bold">12 bairros</span></div>
+                            <div class="flex justify-between"><span>Saneamento:</span><span class="text-green-600 font-bold">98% operacional</span></div>
+                            <div class="flex justify-between"><span>Análise (Ar):</span><span class="text-blue-600 font-bold">PM 2.5 Normal</span></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="rounded border border-green-200 overflow-hidden shadow-sm">
+                            <div class="bg-green-600 px-2 py-1 text-[9px] font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fas fa-check-circle"></i> Protocolo de Normalidade (Nível 1)
+                            </div>
+                            <div class="bg-green-50 p-2 text-[10px] text-green-900 leading-tight">
+                                Rotina de monitoramento sanitário. Amostras conformes (PNMQSA). Nenhuma não-conformidade crítica detectada.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- PANEL 3: MONITOR CLIMÁTICO (EIXO 3) -->
+            <aside class="data-panel min-h-0 flex flex-col" style="border-top: 4px solid #f97316; padding: 15px;">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-cloud-sun-rain text-orange-600"></i>
+                        <span class="text-[12px] font-bold uppercase tracking-wider">Inteligência Meteorológica</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="range-selector bg-slate-200/50">
+                            <div onclick="updateDataRange(7, this, 'clima')" class="range-btn active">7D</div>
+                            <div onclick="updateDataRange(15, this, 'clima')" class="range-btn">15D</div>
+                            <div onclick="updateDataRange(30, this, 'clima')" class="range-btn">30D</div>
+                        </div>
+                        <span class="text-[9px] bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded font-bold border border-yellow-500 shadow-sm">ATENÇÃO</span>
+                    </div>
+                </div>
+
+                <!-- Mini KPIs Grid -->
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                    <div id="val-uv" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Tmax (Censipam)</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-orange-500 text-white px-2 py-0.5 rounded text-[11px]">35</span>
+                        </div>
+                    </div>
+                    <div id="val-ic" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Índ. Calor (IC)</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-red-600 text-white px-2 py-0.5 rounded text-[11px]">41</span>
+                        </div>
+                    </div>
+                    <div id="val-precip" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Precip. 24h</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]">42</span>
+                        </div>
+                    </div>
+                    <div id="val-precip72" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Acum. 72h</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-orange-500 text-white px-2 py-0.5 rounded text-[11px]">114</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Graphic Area -->
+                <div class="flex-1 min-h-0 bg-slate-50/50 rounded-lg p-2 border border-slate-100">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-[10px] font-bold text-slate-600">Temperatura x Sensação (°C)</span>
+                        <span class="text-[9px] font-bold text-dim">Limiares: <span class="text-yellow-600">35°</span> / <span class="text-orange-600">38°</span> / <span class="text-red-600">41°C</span></span>
+                    </div>
+                    <div id="heat-chart" style="height: 140px;"></div>
+                </div>
+
+                <!-- Standardized Footer: CLIMA -->
+                <div class="mt-4 grid grid-cols-2 gap-4 border-t pt-3">
+                    <div>
+                        <div class="text-[9px] font-bold text-dim uppercase mb-2 border-b pb-1">Alertas GERAIS (Prev. 72h)</div>
+                        <div class="space-y-1 text-[10px]">
+                            <div class="flex justify-between"><span class="text-slate-600">Amanhã:</span><span class="text-red-600 font-bold">Tempestade Severa</span></div>
+                            <div class="flex justify-between"><span class="text-slate-600">Domingo:</span><span class="text-orange-600 font-bold">Calor Intenso</span></div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="rounded border border-yellow-300 overflow-hidden shadow-sm">
+                            <div class="bg-yellow-500 px-2 py-1 text-[9px] font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fas fa-info-circle"></i> Protocolo de Atenção (Nível 2)
+                            </div>
+                            <div class="bg-yellow-50 p-2 text-[10px] text-yellow-900 leading-tight">
+                                Monitoramento ativo 72h. Comunicação interna de risco de calor. Reforço na equipe de vigilância climática.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- PANEL 4: HIDROLOGIA (EIXO 3) -->
+            <aside class="data-panel min-h-0 flex flex-col" style="border-top: 4px solid #3b82f6; padding: 15px;">
+                <div class="flex justify-between items-center mb-3">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-water text-blue-600"></i>
+                        <span class="text-[12px] font-bold uppercase tracking-wider">Monitoramento Hidrológico</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="range-selector bg-slate-200/50">
+                            <div onclick="updateDataRange(7, this, 'hidro')" class="range-btn active">7D</div>
+                            <div onclick="updateDataRange(15, this, 'hidro')" class="range-btn">15D</div>
+                            <div onclick="updateDataRange(30, this, 'hidro')" class="range-btn">30D</div>
+                        </div>
+                        <span class="text-[9px] bg-orange-500 text-white px-2 py-0.5 rounded font-bold border border-orange-600 shadow-sm">ALERTA</span>
+                    </div>
+                </div>
+
+                <!-- Strategic KPIs Grid -->
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                    <div id="val-rio" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Nível Rio (m)</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-orange-500 text-white px-2 py-0.5 rounded text-[11px]">3.58</span>
+                        </div>
+                    </div>
+                    <div id="val-mare" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Tábua de Maré</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]">3.1</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Cota Alerta</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-green-600 text-white px-2 py-0.5 rounded text-[11px]">3.5</span>
+                        </div>
+                    </div>
+                    <div id="val-risco" class="bg-slate-50 p-2 rounded border border-slate-100">
+                        <div class="text-[8px] text-dim uppercase">Risco Alagam.</div>
+                        <div class="text-sm font-bold flex items-center gap-1 mt-1">
+                            <span class="bg-orange-500 text-white px-2 py-0.5 rounded text-[11px]">MÉDIO</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Graphic Area -->
+                <div class="flex-1 min-h-0 bg-slate-50/50 rounded-lg p-2 border border-slate-100">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-[10px] font-bold text-slate-600">Curva de Maré (Últimas 12h)</span>
+                        <span class="text-[9px] font-bold text-dim">Limiares: <span class="text-yellow-600">3.2</span> / <span class="text-orange-600">3.5</span> / <span class="text-red-600">3.8m</span></span>
+                    </div>
+                    <div id="hydro-chart" style="height: 140px;"></div>
+                </div>
+
+                <!-- Standardized Footer: HIDRO -->
+                <div class="mt-4 grid grid-cols-2 gap-4 border-t pt-3">
+                    <div>
+                        <div class="text-[9px] font-bold text-dim uppercase mb-2">Zonas de Risco Imediato</div>
+                        <div class="flex flex-col gap-1">
+                            <div class="flex items-center justify-between text-[9px] bg-slate-50 p-1 rounded border border-slate-100">
+                                <span class="font-bold text-slate-800">Ver-o-Peso (Cota 3.6m)</span>
+                                <span class="text-red-700 font-bold">ALTO RISCO</span>
+                            </div>
+                            <div class="flex items-center justify-between text-[9px] bg-slate-50 p-1 rounded border border-slate-100 opacity-60">
+                                <span class="font-bold text-slate-800">Estrada Nova (Canal)</span>
+                                <span class="text-orange-600 font-bold">ALERTA</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="rounded border border-orange-300 overflow-hidden shadow-sm">
+                            <div class="bg-orange-500 px-2 py-1 text-[9px] font-bold text-white uppercase flex items-center gap-2">
+                                <i class="fas fa-bullhorn"></i> Protocolo de Alerta (Nível 3)
+                            </div>
+                            <div class="bg-orange-50 p-2 text-[10px] text-orange-900 leading-tight">
+                                Acionamento Intersetorial: Defesa Civil + APS. Boletim Extraordinário emitido para áreas de várzea e ilhas.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        // --- RELÓGIO ---
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('pt-BR');
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- MAPA ---
+        const CISC_COORDS = [-1.4476005, -48.4685418];
+        const map = L.map('map', {
+            zoomControl: false,
+            attributionControl: false,
+            zoomSnap: 0.1,
+            zoomDelta: 0.1
+        });
+
+        const tiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        }).addTo(map);
+
+        // Ajuste de vibração para destacar o azul da água
+        tiles.on('add', (e) => {
+            e.target.getContainer().style.filter = 'saturate(1.3) brightness(1.02)';
+        });
+
+        let geoJsonLayer;
+        async function loadBairros() {
+            try {
+                const response = await fetch('belem_pa_bairros.geojson');
+                const data = await response.json();
+                geoJsonLayer = L.geoJSON(data, {
+                    style: (f) => {
+                        const colors = ['#ef4444', '#10b981', '#f97316', '#3b82f6'];
+                        const idx = f.properties.name.length % 4;
+                        return { color: colors[idx], weight: 1.5, opacity: 0.4, fillColor: colors[idx], fillOpacity: 0.1 };
+                    },
+                    onEachFeature: (f, l) => {
+                        l.bindTooltip(f.properties.name, { sticky: true, className: 'text-[10px] bg-white border border-slate-200 text-slate-800 font-bold px-2 py-1 rounded shadow-sm' });
+                        
+                        l.on('click', (e) => {
+                            // Reset styles and highlight selected
+                            geoJsonLayer.setStyle({ fillOpacity: 0.05, opacity: 0.1 });
+                            l.setStyle({ fillOpacity: 0.5, opacity: 1, weight: 2.5 });
+
+                            const name = f.properties.name;
+                            const popupContent = `
+                                <div class="p-2 min-w-[180px]">
+                                    <div class="text-[10px] font-bold text-dim uppercase border-b pb-1 mb-2">${name}</div>
+                                    <div class="space-y-1 text-[10px]">
+                                        <div class="flex justify-between"><span>Distrito:</span> <span class="font-bold text-slate-800">DABEL</span></div>
+                                        <div class="flex justify-between"><span>População:</span> <span class="font-bold text-slate-800">~${(Math.random()*20000 + 5000).toFixed(0)} hab.</span></div>
+                                        <div class="flex justify-between border-t pt-1 mt-1"><span class="text-red-600">Dengue (S.E):</span> <span class="font-bold text-red-600">${(Math.random()*15).toFixed(0)} casos</span></div>
+                                        <div class="flex justify-between"><span class="text-blue-600">VIGIAGUA:</span> <span class="font-bold text-blue-600">94% Conf.</span></div>
+                                        <div class="flex justify-between"><span class="text-orange-600">Ilha de Calor:</span> <span class="font-bold text-orange-600">+1.5°C</span></div>
+                                    </div>
+                                    <button class="w-full mt-2 bg-slate-800 text-white text-[9px] py-1 rounded hover:bg-black transition-colors">ABRIR RELATÓRIO COMPLETO</button>
+                                </div>
+                            `;
+                            L.popup({ outline: 'none' })
+                                .setLatLng(e.latlng)
+                                .setContent(popupContent)
+                                .on('remove', () => {
+                                    geoJsonLayer.resetStyle();
+                                })
+                                .openOn(map);
+                        });
+                    }
+                }).addTo(map);
+
+                // Adiciona o marcador fixo do CISC
+                const ciscIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="map-pulse" style="background: #ffffff; width: 14px; height: 14px; box-shadow: 0 0 15px rgba(255,255,255,0.8); border: 2px solid #0f172a;"></div>`,
+                    iconSize: [14, 14],
+                    iconAnchor: [7, 7]
+                });
+                L.marker(CISC_COORDS, { icon: ciscIcon, zIndexOffset: 1000 })
+                    .addTo(map)
+                    .bindTooltip('<div class="text-[10px] font-bold">HUB CENTRAL CISC</div>', { permanent: true, direction: 'bottom', className: 'bg-slate-800 text-white border-none shadow-lg' });
+
+                map.fitBounds(geoJsonLayer.getBounds(), { padding: [0, 0] });
+                setTimeout(() => filterMapLayers('epi'), 1000);
+            } catch (e) { console.error(e); }
+        }
+        loadBairros();
+
+        let activeMarkers = L.layerGroup();
+
+        function simulateNetworkMapping(type) {
+            if (!map || !geoJsonLayer) return;
+            activeMarkers.clearLayers();
+            activeMarkers.addTo(map);
+
+            const counts = { ubs: 86, upa: 5, hosp: 3, caps: 12 };
+            let count = counts[type] || 20;
+            const color = "#10b981";
+
+            // Unidades Reais (Mosqueiro, Outeiro, etc.)
+            const realUnits = [
+                { name: "UBS/ESF Maracajá", coords: [-1.155, -48.468], type: 'ubs' },
+                { name: "UBS Carananduba", coords: [-1.135, -48.455], type: 'ubs' },
+                { name: "UBS Baía do Sol", coords: [-1.090, -48.375], type: 'ubs' },
+                { name: "UBS Aeroporto", coords: [-1.144410, -48.440260], type: 'ubs' },
+                { name: "UBS Furo das Marinhas", coords: [-1.175, -48.385], type: 'ubs' },
+                { name: "UBS Outeiro", coords: [-1.259711, -48.456440], type: 'ubs' },
+                { name: "Hospital Geral de Mosqueiro", coords: [-1.154, -48.466], type: 'hosp' }
+            ];
+
+            // Adiciona unidades reais se o tipo coincidir
+            realUnits.filter(u => u.type === type).forEach(u => {
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="map-pulse" style="background: ${color}; width: 10px; height: 10px; box-shadow: 0 0 12px ${color};"></div>`,
+                    iconSize: [10, 10],
+                    iconAnchor: [5, 5]
+                });
+                L.marker(u.coords, { icon: icon })
+                    .addTo(activeMarkers)
+                    .bindTooltip(`<div class="text-[10px]"><b>${u.name}</b><br><span class="text-green-500">Sincronizado</span></div>`, { direction: 'top' });
+                
+                // Linha para o CISC (Fluxo de Dados)
+                L.polyline([u.coords, CISC_COORDS], {
+                    color: color,
+                    weight: 1.5,
+                    opacity: 0.35,
+                    className: 'dash-flow',
+                    interactive: false
+                }).addTo(activeMarkers);
+
+                count--;
+            });
+
+            const layers = [];
+            geoJsonLayer.eachLayer(l => layers.push(l));
+            if(layers.length === 0) return;
+
+            // Embaralha para garantir cobertura randômica inicial
+            const shuffledLayers = [...layers].sort(() => Math.random() - 0.5);
+            const tacticalCenter = L.latLng(CISC_COORDS);
+
+            for(let i=0; i<count; i++) {
+                let selectedLayer;
+                
+                // Estratégia de Cobertura Total:
+                // Se i < total de bairros, garante 1 ponto por bairro/ilha
+                if (i < layers.length && count >= 20) {
+                    selectedLayer = shuffledLayers[i];
+                } else {
+                    // Sensores excedentes ou listas pequenas (UPA/Hosp) seguem o peso de densidade central
+                    for(let attempt=0; attempt<5; attempt++) {
+                        const candidate = layers[Math.floor(Math.random() * layers.length)];
+                        const dist = candidate.getBounds().getCenter().distanceTo(tacticalCenter);
+                        // Limite de 50km para não excluir Mosqueiro/Cotijuba do sorteio de densidade
+                        if (Math.random() > (dist / 50000)) {
+                            selectedLayer = candidate;
+                            break;
+                        }
+                        if(attempt === 4) selectedLayer = candidate;
+                    }
+                }
+
+                const bounds = selectedLayer.getBounds();
+                const center = bounds.getCenter();
+                
+                // Jitter reduzido para 10% para garantir que os pontos fiquem em terra firme (perto do centro do bairro)
+                const lat = center.lat + (Math.random() - 0.5) * (bounds.getNorth() - bounds.getSouth()) * 0.1;
+                const lng = center.lng + (Math.random() - 0.5) * (bounds.getEast() - bounds.getWest()) * 0.1;
+
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="map-pulse" style="background: ${color}; width: 8px; height: 8px; box-shadow: 0 0 8px ${color};"></div>`,
+                    iconSize: [8, 8],
+                    iconAnchor: [4, 4]
+                });
+
+                L.marker([lat, lng], { icon: icon })
+                    .addTo(activeMarkers)
+                    .bindTooltip(`<div class="text-[9px]">Sincronizando: <b>${type.toUpperCase()} #${i+1}</b></div>`, { direction: 'top' });
+
+                // Linha para o CISC (Fluxo de Dados)
+                L.polyline([[lat, lng], CISC_COORDS], {
+                    color: color,
+                    weight: 1,
+                    opacity: 0.25,
+                    className: 'dash-flow',
+                    interactive: false
+                }).addTo(activeMarkers);
+            }
+
+            if(type === 'ubs') {
+                map.setView([-1.25, -48.42], 10.5, { animate: true });
+            } else {
+                const group = new L.featureGroup(activeMarkers.getLayers());
+                if(activeMarkers.getLayers().length > 0) map.fitBounds(group.getBounds(), { padding: [50, 50] });
+            }
+        }
+
+        function filterMapLayers(type) {
+            if (!map) return;
+            activeMarkers.clearLayers();
+            activeMarkers.addTo(map);
+            
+            // Atualiza Status Cards (Topo)
+            document.querySelectorAll('.status-card').forEach(c => {
+                c.classList.remove('active');
+            });
+            const btn = document.getElementById(`btn-${type}`);
+            if(btn) {
+                btn.classList.add('active');
+            }
+
+            // Atualiza HUD Tags (Sobre o Mapa)
+            document.querySelectorAll('.hud-tag').forEach(t => t.classList.remove('active'));
+            const hud = document.getElementById(`hud-${type}`);
+            if(hud) hud.classList.add('active');
+
+            let data = [];
+            let color = "#3b82f6";
+
+            if (type === 'epi') {
+                color = "#ef4444";
+                data = [
+                    { name: 'HPSM Mário Pinotti', coords: [-1.445, -48.482], status: 'Operacional', update: '12s' },
+                    { name: 'HPSM Humberto Maradei', coords: [-1.458, -48.471], status: 'Operacional', update: '05s' },
+                    { name: 'UPA Sacramenta', coords: [-1.418, -48.484], status: 'Operacional', update: '1min' },
+                    { name: 'UPA Icoaraci', coords: [-1.298, -48.478], status: 'Operacional', update: '45s' },
+                    { name: 'UPA Terra Firme', coords: [-1.452, -48.453], status: 'Operacional', update: '30s' }
+                ];
+            } else if (type === 'visa') {
+                color = "#10b981";
+                data = [
+                    { name: 'Reservatório COSANPA', coords: [-1.432, -48.462], status: 'Em Coleta', update: '2h' },
+                    { name: 'Cluster Açaí (Batista Campos)', coords: [-1.461, -48.488], status: 'Inspeção Ativa', update: '15min' },
+                    { name: 'Monitoramento Ar (Bosque)', coords: [-1.444, -48.458], status: 'Operacional', update: '10s' }
+                ];
+            } else if (type === 'clima') {
+                color = "#f97316";
+                data = [
+                    { name: 'Estação INMET (Aeroporto)', coords: [-1.385, -48.478], status: 'Online', update: '1min' },
+                    { name: 'Sensor Censipam (Marco)', coords: [-1.442, -48.452], status: 'Online', update: '30s' }
+                ];
+            } else if (type === 'hidro') {
+                color = "#3b82f6";
+                data = [
+                    { name: 'Sensor GPRS (Preamar)', coords: [-1.464, -48.502], status: 'Online', update: '05s' },
+                    { name: 'Régua Hidrométrica (Guamá)', coords: [-1.465, -48.475], status: 'Operacional', update: '12s' }
+                ];
+            }
+
+            data.forEach(p => {
+                let iconClass = 'fa-broadcast-tower';
+                if (type === 'epi') iconClass = 'fa-notes-medical';
+                else if (type === 'visa') iconClass = 'fa-flask';
+
+                const icon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div class="map-icon-pulse" style="color: ${color};"><i class="fas ${iconClass}"></i></div>`,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                });
+
+                L.marker(p.coords, { icon: icon })
+                    .addTo(activeMarkers)
+                    .bindTooltip(`
+                        <div class="text-[10px] leading-tight">
+                            <span class="font-bold">${p.name}</span><br>
+                            <span class="text-green-600 font-bold">● ${p.status}</span><br>
+                            <span class="text-dim">Atualizado há: ${p.update}</span>
+                        </div>
+                    `, { permanent: false, direction: 'top' });
+
+                // Linha para o CISC (Fluxo de Dados)
+                L.polyline([p.coords, CISC_COORDS], {
+                    color: color,
+                    weight: 1.5,
+                    opacity: 0.4,
+                    className: 'dash-flow',
+                    interactive: false
+                }).addTo(activeMarkers);
+            });
+
+            if(data.length > 0) {
+                const group = new L.featureGroup(data.map(d => L.marker(d.coords)));
+                map.fitBounds(group.getBounds(), { padding: [50, 50], maxZoom: 14 });
+            }
+        }
+
+        // --- SISTEMA DE DADOS REATIVOS ---
+        const charts = { epi: null, visa: null, clima: null, hidro: null };
+
+        function updateDataRange(days, el, type) {
+            const container = el.parentElement;
+            container.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+
+            const factor = days / 7;
+            const generateData = (count, base, vari) => Array.from({length: count}, () => (base + Math.random() * vari).toFixed(1));
+
+            // Helper to update badge text safely
+            const updateBadge = (id, val, suffix = '') => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const badge = el.querySelector('span:first-child');
+                    if (badge) badge.innerText = val + suffix;
+                }
+            };
+
+            if (type === 'epi') {
+                updateBadge('val-dda', Math.floor(415 * factor));
+                updateBadge('val-lepto', Math.floor(12 * factor));
+                updateBadge('val-mort', '0' + Math.floor(2 * factor));
+                
+                if(charts.epi) charts.epi.updateSeries([
+                    { name: 'SRAG (Respiratória)', data: generateData(days, 50, 40) },
+                    { name: 'Dengue', data: generateData(days, 30, 50) },
+                    { name: 'Malária', data: generateData(days, 10, 15) }
+                ]);
+            } else if (type === 'visa') {
+                updateBadge('val-vigiagua', Math.floor(92 - (days/30) * 5), '%');
+                updateBadge('val-vigiar', Math.floor(35 + Math.random() * 5));
+                updateBadge('val-lacen', Math.floor(14 * factor));
+                updateBadge('val-dta', '0' + Math.floor(1 * factor));
+                
+                if(charts.visa) charts.visa.updateSeries([{ name: 'Conformidade', data: generateData(days, 85, 10) }]);
+            } else if (type === 'clima') {
+                updateBadge('val-uv', Math.floor(35 + (Math.random() * 2)));
+                updateBadge('val-ic', Math.floor(41 + (Math.random() * 2)));
+                updateBadge('val-precip', Math.floor(42 * factor));
+                updateBadge('val-precip72', Math.floor(114 * factor));
+                
+                if(charts.clima) charts.clima.updateSeries([
+                    { name: 'Temp', data: generateData(days, 30, 8) },
+                    { name: 'Sensação', data: generateData(days, 35, 10) }
+                ]);
+            } else if (type === 'hidro') {
+                updateBadge('val-rio', (3.5 + Math.random() * 0.4).toFixed(2));
+                updateBadge('val-mare', (3.0 + Math.random() * 0.3).toFixed(1));
+                
+                if(charts.hidro) charts.hidro.updateSeries([{ name: 'Nível (m)', data: generateData(days, 3.0, 0.9) }]);
+            }
+        }
+
+        // --- GRÁFICOS DETALHADOS ---
+        const commonOptions = {
+            chart: {
+                toolbar: { 
+                    show: true, 
+                    autoSelected: 'pan',
+                    tools: {
+                        download: false,
+                        selection: true,
+                        zoom: true,
+                        zoomin: true,
+                        zoomout: true,
+                        pan: true,
+                        reset: true
+                    }
+                },
+                sparkline: { enabled: false },
+                background: 'transparent',
+                zoom: { 
+                    enabled: true, 
+                    type: 'xy',
+                    autoScaleYaxis: false
+                }
+            },
+            theme: { mode: 'light' },
+            stroke: { curve: 'smooth', width: 2.5 },
+            dataLabels: { enabled: false },
+            grid: { borderColor: '#f1f5f9', strokeDashArray: 4, padding: {left: 10, right: 0, top: 0, bottom: 0} },
+            xaxis: { labels: {show: false}, axisBorder: {show: false}, axisTicks: {show: false} },
+            yaxis: { labels: {show: true, style: {fontSize: '8px', colors: ['#94a3b8']}, offsetX: -10} },
+            tooltip: { theme: 'light', x: {show: false} },
+            legend: { show: false }
+        };
+
+        // DEVS: SRAG vs Arboviroses vs Malária
+        charts.epi = new ApexCharts(document.querySelector("#arboviroses-chart"), {
+            ...commonOptions,
+            chart: { ...commonOptions.chart, type: 'area', height: 140 },
+            series: [
+                { name: 'SRAG (Respiratória)', data: [45, 52, 60, 70, 82, 95, 110] },
+                { name: 'Dengue', data: [31, 40, 28, 51, 42, 109, 100] },
+                { name: 'Malária', data: [12, 15, 10, 18, 14, 22, 19] }
+            ],
+            colors: ['#dc2626', '#f87171', '#fbbf24'],
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.2, opacityTo: 0.0 } },
+            annotations: {
+                yaxis: [
+                    { y: 50, borderColor: '#eab308', strokeDashArray: 4, opacity: 0.4, label: { show: true, text: '50', position: 'left', offsetX: -8, style: { color: '#fff', background: '#eab308' } } },
+                    { y: 80, borderColor: '#f97316', strokeDashArray: 4, opacity: 0.5, label: { show: true, text: '80', position: 'left', offsetX: -8, style: { color: '#fff', background: '#f97316' } } },
+                    { y: 110, borderColor: '#ef4444', strokeDashArray: 4, opacity: 0.6, label: { show: true, text: '110', position: 'left', offsetX: -8, style: { color: '#fff', background: '#ef4444' } } }
+                ]
+            }
+        });
+        charts.epi.render();
+
+        // VISA: Área de Conformidade
+        charts.visa = new ApexCharts(document.querySelector("#visa-chart"), {
+            ...commonOptions,
+            chart: { ...commonOptions.chart, type: 'area', height: 140 },
+            series: [{ name: 'Conformidade', data: [88, 92, 90, 94, 91, 95, 92] }],
+            colors: ['#10b981'],
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.0 } },
+            annotations: {
+                yaxis: [
+                    { y: 90, borderColor: '#eab308', strokeDashArray: 4, opacity: 0.4, label: { show: true, text: '90', position: 'left', offsetX: -8, style: { color: '#fff', background: '#eab308' } } },
+                    { y: 85, borderColor: '#f97316', strokeDashArray: 4, opacity: 0.5, label: { show: true, text: '85', position: 'left', offsetX: -8, style: { color: '#fff', background: '#f97316' } } },
+                    { y: 80, borderColor: '#ef4444', strokeDashArray: 4, opacity: 0.6, label: { show: true, text: '80', position: 'left', offsetX: -8, style: { color: '#fff', background: '#ef4444' } } }
+                ]
+            },
+            yaxis: { min: 80, max: 100, labels: { show: true, style: {fontSize: '8px', colors: ['#94a3b8']}, offsetX: -10 } }
+        });
+        charts.visa.render();
+
+        // Clima: Temp vs Sensação
+        charts.clima = new ApexCharts(document.querySelector("#heat-chart"), {
+            ...commonOptions,
+            chart: { ...commonOptions.chart, type: 'line', height: 140 },
+            series: [
+                { name: 'Temp', data: [31, 32, 33, 35, 38, 37, 36] },
+                { name: 'Sensação', data: [35, 36, 38, 41, 45, 43, 41] }
+            ],
+            colors: ['#f97316', '#fbbf24'],
+            annotations: {
+                yaxis: [
+                    { y: 35, borderColor: '#eab308', strokeDashArray: 3, opacity: 0.4, label: { show: true, text: '35°', position: 'left', offsetX: -8, style: { color: '#fff', background: '#eab308' } } },
+                    { y: 38, borderColor: '#f97316', strokeDashArray: 3, opacity: 0.5, label: { show: true, text: '38°', position: 'left', offsetX: -8, style: { color: '#fff', background: '#f97316' } } },
+                    { y: 41, borderColor: '#ef4444', strokeDashArray: 3, opacity: 0.6, label: { show: true, text: '41°', position: 'left', offsetX: -8, style: { color: '#fff', background: '#ef4444' } } }
+                ]
+            }
+        });
+        charts.clima.render();
+
+        // Hidro: Curva de Maré
+        charts.hidro = new ApexCharts(document.querySelector("#hydro-chart"), {
+            ...commonOptions,
+            chart: { ...commonOptions.chart, type: 'area', height: 140 },
+            series: [{ name: 'Nível (m)', data: [1.8, 2.2, 2.8, 3.2, 3.45, 3.52, 3.58] }],
+            colors: ['#3b82f6'],
+            fill: { type: 'gradient', gradient: { opacityFrom: 0.3, opacityTo: 0.0 } },
+            annotations: {
+                yaxis: [
+                    { y: 3.2, borderColor: '#eab308', strokeDashArray: 5, opacity: 0.4, label: { show: true, text: '3.2', position: 'left', offsetX: -8, style: { color: '#fff', background: '#eab308' } } },
+                    { y: 3.5, borderColor: '#f97316', strokeDashArray: 5, opacity: 0.5, label: { show: true, text: '3.5', position: 'left', offsetX: -8, style: { color: '#fff', background: '#f97316' } } },
+                    { y: 3.8, borderColor: '#ef4444', strokeDashArray: 5, opacity: 0.6, label: { show: true, text: '3.8', position: 'left', offsetX: -8, style: { color: '#fff', background: '#ef4444' } } }
+                ]
+            }
+        });
+        charts.hidro.render();
+
+        // --- CAPTURA DE COORDENADAS ---
+        let isCapturingCoords = false;
+        function toggleCoordPicker() {
+            isCapturingCoords = !isCapturingCoords;
+            const btn = document.getElementById('coord-picker-btn');
+            const display = document.getElementById('coord-display');
+            if(isCapturingCoords) {
+                btn.style.background = '#3b82f6';
+                btn.style.borderColor = '#2563eb';
+                btn.querySelector('svg').style.color = '#ffffff';
+                map.getContainer().style.cursor = 'crosshair';
+            } else {
+                btn.style.background = 'rgba(255,255,255,0.8)';
+                btn.style.borderColor = '#e2e8f0';
+                btn.querySelector('svg').style.color = '#475569';
+                map.getContainer().style.cursor = '';
+                display.classList.add('hidden');
+            }
+        }
+
+        map.on('click', (e) => {
+            if(!isCapturingCoords) return;
+            const lat = e.latlng.lat.toFixed(6);
+            const lng = e.latlng.lng.toFixed(6);
+            const display = document.getElementById('coord-display');
+            document.getElementById('coord-text').innerText = `${lat}, ${lng}`;
+            display.classList.remove('hidden');
+            console.log(`Coordenada capturada: [${lat}, ${lng}]`);
+        });
+
+        function copyCoords() {
+            const text = document.getElementById('coord-text').innerText;
+            navigator.clipboard.writeText(`[${text}]`).then(() => {
+                const btn = document.querySelector('#coord-display button');
+                const oldText = btn.innerText;
+                btn.innerText = 'COPIADO!';
+                setTimeout(() => btn.innerText = oldText, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

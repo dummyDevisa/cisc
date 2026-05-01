@@ -102,12 +102,113 @@
         }
         .logo i { -webkit-text-fill-color: var(--primary); }
 
-        .nav-links { display: flex; gap: 25px; }
-        .nav-links a {
-            color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 500;
-            transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;
+        
+        
+        
+        
+        /* Navegação Organizada CISC */
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
         }
-        .nav-links a:hover { color: var(--primary); }
+
+        .nav-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .group-title {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 10px 0;
+        }
+
+        .group-title i.fa-chevron-down {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-group:hover .group-title {
+            color: var(--primary);
+        }
+
+        .nav-group:hover i.fa-chevron-down {
+            transform: rotate(180deg);
+            color: var(--primary);
+        }
+
+        .group-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px;
+            min-width: 240px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 1000;
+        }
+
+        .nav-group:hover .group-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .group-content a {
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: var(--text-dim) !important;
+            font-size: 0.85rem !important;
+            text-decoration: none !important;
+            display: flex !important;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .group-content a:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--primary) !important;
+            padding-left: 20px;
+        }
+
+        .group-content a i {
+            width: 18px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-links { gap: 15px; }
+            .group-title { font-size: 0.8rem; }
+        }
+
+
+            .group-title { font-size: 0.8rem; }
+        }
+
+            .group-title { font-size: 0.75rem; }
+        }
+
 
         .content-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(10px); }
         h1, h2, h3 { font-family: 'Outfit', sans-serif; }
@@ -142,29 +243,73 @@
 </head>
 <body class="font-sans">
     <div class="bg-mesh"></div>
-
     <header class="site-header">
-        <div class="logo">
+        <a href="index.html" class="logo" style="text-decoration: none;">
             <i class="fas fa-microchip"></i>
             <span>CISC BELÉM</span>
-        </div>
+        </a>
         <nav class="nav-links">
-            <a href="index.html"><i class="fas fa-home"></i> Início</a>
-            <a href="etl_arquitetura.html"><i class="fas fa-project-diagram"></i> Arquitetura</a>
-            <a href="devs_etl_detalhado.html"><i class="fas fa-stream"></i> Pipeline</a>
-            <a href="hitl_devs_arquitetura.html"><i class="fas fa-brain"></i> HITL</a>
-            <a href="cisc_ia_modelagem.html"><i class="fas fa-robot"></i> IA/HTR</a>
-            <a href="sala_situacao.html"><i class="fas fa-tv"></i> Sala</a>
-            <a href="matriz_alertas.html" style="color: var(--primary);"><i class="fas fa-bell"></i> Alertas</a>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-layer-group"></i> Estrutura
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="index.html" class=""><i class="fas fa-home"></i> Início / Visão Geral</a>
+                    <a href="etl_arquitetura.html" class=""><i class="fas fa-project-diagram"></i> Arquitetura Core</a>
+                    <a href="schema_linkage.html" class=""><i class="fas fa-database"></i> Schema PostGIS</a>
+                </div>
+            </div>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-microchip"></i> Inteligência
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="devs_etl_detalhado.html" class=""><i class="fas fa-file-medical"></i> Pipeline DEVS</a>
+                    <a href="visa_etl_detalhado.html" class=""><i class="fas fa-shield-virus"></i> Pipeline VISA</a>
+                    <a href="cisc_ia_modelagem.html" class=""><i class="fas fa-robot"></i> Modelagem IA/HTR</a>
+                    <a href="hitl_devs_arquitetura.html" class=""><i class="fas fa-users-cog"></i> Validação HITL</a>
+                </div>
+            </div>
+            <div class="nav-group">
+                <span class="group-title">
+                    <i class="fas fa-eye"></i> Decisão
+                    <i class="fas fa-chevron-down"></i>
+                </span>
+                <div class="group-content">
+                    <a href="sala_situacao.html" class=""><i class="fas fa-desktop"></i> Sala de Situação</a>
+                    <a href="matriz_alertas.html" class="active"><i class="fas fa-exclamation-triangle"></i> Matriz de Alertas</a>
+                    <a href="dashboards_mockups.html" class=""><i class="fas fa-chart-line"></i> Mockups de Dashboards</a>
+                </div>
+            </div>
+            <a href="https://github.com/dummyDevisa/cisc" target="_blank" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-left: 10px;">
+                <i class="fab fa-github"></i> GitHub
+            </a>
         </nav>
     </header>
 
+    
+    
+    
+    
+    
+
+
+
+
+
     <main class="max-w-7xl mx-auto p-8">
         <div class="content-card rounded-2xl p-8 mb-8">
-            <header class="mb-8 border-b border-white/10 pb-4">
-                <h1 class="text-4xl font-bold text-white">Matriz de Decisão e Alertas</h1>
-                <p class="text-slate-400 mt-2 text-lg">Cruzamento de gatilhos climáticos com thresholds epidemiológicos para definir o nível de resposta do CISC. O coração da antecipação.</p>
-            </header>
+            
+    
+    
+    
+    
+
+
+
+
 
             <!-- Diagrama do Fluxo de Escalação -->
             <div id="panzoom-container" class="relative bg-black/20 border border-white/10 rounded-xl overflow-hidden flex justify-center mb-10" style="height: 600px;">
@@ -190,12 +335,13 @@ flowchart TD
     classDef orange fill:#431407,stroke:#f97316,stroke-width:2px,color:#ffedd5;
     classDef red fill:#450a0a,stroke:#ef4444,stroke-width:2px,color:#fecaca;
 
-    subgraph GATILHOS ["Gatilhos Monitorados (Eixos 1, 3 e 4)"]
+    subgraph GATILHOS ["Gatilhos Monitorados (Eixos 1, 3 e 4 + DEVS + DEVISA)"]
         direction LR
         G1["🌡️ Temperatura<br>Tmax, Indice de Calor<br>(INMET)"]:::clima
         G2["🌧️ Precipitacao<br>Acumulado 24h/72h<br>(CEMADEN)"]:::clima
         G3["🌊 Nivel Hidrologico<br>Rios + Tábua de Maré<br>(ANA / Marinha)"]:::hidro
-        G4["📊 Excesso Epidemio<br>Atendimentos vs Baseline<br>(SINAN / e-SUS)"]:::epi
+        G4["📊 Excesso Epidemio<br>Atendimentos vs Baseline<br>(SINAN / e-SUS / DEVS)"]:::epi
+        G5["🧫 Sanit. Ambiental<br>Agua, Ar, DTA<br>(DEVISA / LACEN)"]:::epi
     end
 
     ENGINE{"🧠 Motor de Decisão<br>(Cruzamento Automático<br>Grafana + R)"}:::decide
@@ -204,6 +350,7 @@ flowchart TD
     G2 --> ENGINE
     G3 --> ENGINE
     G4 --> ENGINE
+    G5 --> ENGINE
 
     subgraph NIVEIS ["Níveis de Resposta"]
         N1["🟢 NORMALIDADE<br>Rotina de monitoramento"]:::green
@@ -360,10 +507,63 @@ flowchart TD
                 </table>
             </div>
 
+            <!-- Matriz Sanitária VISA -->
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold text-white mb-2">Thresholds Sanitários <span class="text-sm font-normal text-slate-400 ml-2">(DEVISA)</span></h2>
+                <p class="text-slate-400 mb-6">Dados gerados pelas divisões <strong>DVSA</strong> (alimentos/DTA), <strong>DVSE/VISAMB</strong> (água e ar) e analisados pelo LACEN. São fornecidos à comissão do CISC e cruzados com eventos climáticos para antecipar surtos de origem sanitária.</p>
+
+                <table class="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Variável</th>
+                            <th>Fonte</th>
+                            <th><span class="badge badge-green">Normal</span></th>
+                            <th><span class="badge badge-yellow">Atenção</span></th>
+                            <th><span class="badge badge-orange">Alerta</span></th>
+                            <th><span class="badge badge-red">Emergência</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>🍽️ DTA (Doença Transmitida por Alimento)</strong></td>
+                            <td>DEVISA/DVSA<br><em>+ SINAN</em></td>
+                            <td>Casos esporádicos</td>
+                            <td>Aumento pós-calor<br><em>ou pós-chuva</em></td>
+                            <td>Cluster geográfico<br><em>confirmado</em></td>
+                            <td>Surto declarado<br><em>(2+ estabelecimentos)</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>🫙 Monitoramento de Açaí</strong><br><em>(PNMQSA/DVSA)</em></td>
+                            <td>LACEN / DVSA</td>
+                            <td>Amostra conforme<br><em>padrão ANVISA</em></td>
+                            <td>Não conformidade<br><em>em rotulagem/prazo</em></td>
+                            <td>Contaminação<br><em>em lote específico</em></td>
+                            <td>Chagas aguda<br><em>confirmada em lote</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>💧 Qualidade da Água</strong><br><em>(VIGIAGUA/VISAMB)</em></td>
+                            <td>DVSE/VISAMB<br><em>+ LACEN</em></td>
+                            <td>Dentro dos padrões<br><em>Portaria MS 888/21</em></td>
+                            <td>Parâmetro fora<br><em>em ponto isolado</em></td>
+                            <td>Não conformidade<br><em>em setor de abast.</em></td>
+                            <td>Contaminação<br><em>em rede pública</em></td>
+                        </tr>
+                        <tr>
+                            <td><strong>💨 Qualidade do Ar</strong><br><em>(VIGIAR/VISAMB)</em></td>
+                            <td>DVSE/VISAMB<br><em>+ sensores</em></td>
+                            <td>IQAr Bom<br><em>(0 – 40)</em></td>
+                            <td>IQAr Moderado<br><em>(41 – 80)</em></td>
+                            <td>IQAr Ruim<br><em>(81 – 120)</em></td>
+                            <td>IQAr Péssimo<br><em>(&gt; 120)</em></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <!-- Lógica de Cruzamento -->
             <div class="border-t border-white/10 pt-8">
-                <h2 class="text-3xl font-bold text-white mb-6">Lógica de Cruzamento: O Diferencial do CISC</h2>
-                <p class="text-slate-400 mb-8">O valor do CISC não está em monitorar clima <em>ou</em> saúde isoladamente — isso já existe. O diferencial é o <strong>cruzamento automático</strong> entre gatilhos climáticos e thresholds epidemiológicos.</p>
+                <h2 class="text-3xl font-bold text-white mb-6">Lógica de Cruzamento: O Diferencial do CISC (Saúde Única)</h2>
+                <p class="text-slate-400 mb-8">O valor do CISC não está em monitorar clima <em>ou</em> saúde isoladamente — isso já era feito de forma reativa. A aplicação da <strong>Saúde Única (One Health)</strong> por meio do <strong>cruzamento automático</strong> entre gatilhos climáticos e dados de vigilância sanitária e ambiental (água, ar, alimentos) é uma das estratégias mais avançadas e cientificamente fundamentadas na inteligência em saúde pública hoje.</p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-white/5 border-l-4 border-sky-500 p-6 rounded-xl">
@@ -393,12 +593,26 @@ flowchart TD
                             Detecção CUSUM/SaTScan de cluster geográfico de DDA <strong>E</strong> evento de calor extremo <strong>E</strong> falha no abastecimento de água → <strong>Emergência</strong>: gabinete de crise, comunicação de risco à população, reforço de saneamento emergencial.
                         </p>
                     </div>
+
+                    <div class="bg-white/5 border-l-4 border-green-600 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-green-400 mb-3">🌡️ + 🍽️ Calor → DTA / Açaí <span class="text-xs font-normal text-slate-400">(DEVISA)</span></h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Temperatura máxima acima de 37°C por 2+ dias <strong>E</strong> não conformidade em amostra de açaí (DVSA/LACEN) → <strong>Alerta Sanitário</strong>: DEVISA intensifica inspeções em batedores artesanais e feiras, DVSA coordena com DVE a investigação de DTA, com lag esperado de 3–5 dias para notificações.
+                        </p>
+                    </div>
+
+                    <div class="bg-white/5 border-l-4 border-blue-400 p-6 rounded-xl">
+                        <h3 class="text-xl font-bold text-blue-300 mb-3">🌧️ + 💧 Chuva → Qualidade da Água <span class="text-xs font-normal text-slate-400">(DEVISA)</span></h3>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Precipitação &gt;50mm em 24h <strong>E</strong> parâmetro fora do padrão em ponto de coleta VIGIAGUA → <strong>Atenção Hídrica</strong>: VISAMB intensifica coletas em mananciais vulneráveis, DVSE coordena com COSANPA, CISC monitora aumento de DDA e leptospirose nos 7 dias seguintes.
+                        </p>
+                    </div>
                 </div>
 
                 <div class="mt-8 p-6 bg-black/40 border border-white/10 rounded-xl">
                     <h3 class="text-white font-bold mb-3 text-lg">⚠️ Nota Importante</h3>
                     <p class="text-slate-400 leading-relaxed text-sm">
-                        Todos os thresholds acima são <strong>valores iniciais de referência</strong>, baseados em parâmetros nacionais (INMET, Fiocruz, CEMADEN). Nos primeiros 6 meses de operação do CISC, o <strong>Eixo 4 (Cientista de Dados)</strong> calculará as baselines históricas específicas de Belém para cada variável e agravo, refinando os gatilhos com dados locais e sazonais.
+                        Todos os thresholds acima são <strong>valores iniciais de referência</strong>, baseados em parâmetros nacionais (INMET, Fiocruz, CEMADEN, ANVISA). Nos primeiros 6 meses de operação do CISC, o <strong>Eixo 4 (Cientista de Dados)</strong> calculará as baselines históricas específicas de Belém para cada variável e agravo — incluindo os dados sanitários do DEVISA (LACEN/DVSA/VISAMB) — refinando os gatilhos com dados locais e sazonais.
                     </p>
                 </div>
             </div>
