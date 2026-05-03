@@ -97,7 +97,9 @@
         .logo {
             font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800;
             background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
             display: flex; align-items: center; gap: 10px;
         }
         .logo i { -webkit-text-fill-color: var(--primary); }
@@ -203,12 +205,6 @@
         }
 
 
-            .group-title { font-size: 0.8rem; }
-        }
-
-            .group-title { font-size: 0.75rem; }
-        }
-
 
         .content-card { background: var(--card-bg); border: 1px solid var(--border); backdrop-filter: blur(10px); }
         h1, h2, h3 { font-family: 'Outfit', sans-serif; }
@@ -280,7 +276,7 @@
                 <div class="group-content">
                     <a href="sala_situacao.html" class=""><i class="fas fa-desktop"></i> Sala de Situação</a>
                     <a href="matriz_alertas.html" class="active"><i class="fas fa-exclamation-triangle"></i> Matriz de Alertas</a>
-                    <a href="dashboards_mockups.html" class=""><i class="fas fa-chart-line"></i> Mockups de Dashboards</a>
+                    <a href="dashboard/index.html" class=""><i class="fas fa-chart-line"></i> Painel de Comando CISC</a>
                 </div>
             </div>
             <a href="https://github.com/dummyDevisa/cisc" target="_blank" style="color: var(--text-dim); text-decoration: none; font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-left: 10px;">
@@ -403,12 +399,12 @@ flowchart TD
                             <td>Tmax &gt; 40°C<br><em>ou 5+ dias &gt;37°C</em></td>
                         </tr>
                         <tr>
-                            <td><strong>🔥 Índice de Calor</strong></td>
+                            <td><strong>🔥 Índice de Calor (IC)</strong><br><span class="text-[10px] text-slate-500 uppercase">Protocolo NC1 a NC5</span></td>
                             <td>Calculado</td>
-                            <td>IC &lt; 38°C</td>
-                            <td>38°C — 42°C</td>
-                            <td>42°C — 48°C</td>
-                            <td>IC &gt; 48°C</td>
+                            <td><strong>NC1: Normal</strong><br>IC &le; 38°C</td>
+                            <td><strong>NC2: Atenção</strong><br>IC &gt; 38°C <br><em>(2 dias consec.)</em></td>
+                            <td><strong>NC3: Alerta</strong><br>IC 38°C — 42°C<br><em>(3 dias consec.)</em></td>
+                            <td><strong>NC4/5: Emergência</strong><br>IC &gt; 42°C (NC4)<br>IC &gt; 45°C (NC5)</td>
                         </tr>
                         <tr>
                             <td><strong>🌧️ Precipitação 24h</strong></td>
@@ -574,10 +570,16 @@ flowchart TD
                     </div>
 
                     <div class="bg-white/5 border-l-4 border-amber-500 p-6 rounded-xl">
-                        <h3 class="text-xl font-bold text-amber-400 mb-3">🌡️ + 🏥 Calor → Sobrecarga UPA</h3>
-                        <p class="text-slate-300 text-sm leading-relaxed">
-                            Índice de Calor acima de 42°C por 3+ dias <strong>E</strong> aumento de 20% em atendimentos de UPA em idosos → <strong>Atenção</strong>: ativar pontos de hidratação, comunicar risco via APS e reforçar equipes de SAMU em áreas vulneráveis.
+                        <h3 class="text-xl font-bold text-amber-400 mb-3">🌡️ + 🏥 Calor → Protocolo NC (Rio Adaptado)</h3>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-3">
+                            Adoção dos Níveis de Calor (NC) do COR Rio, calibrados para a umidade de Belém. O foco muda de apenas "temperatura" para **índice de calor + tempo de exposição**.
                         </p>
+                        <ul class="text-[11px] space-y-1 text-slate-400">
+                            <li><strong>NC1/NC2:</strong> Monitoramento e comunicação de rotina.</li>
+                            <li><strong>NC3:</strong> Triagem APS focada em idosos e doentes crônicos.</li>
+                            <li><strong>NC4:</strong> Ativação de centros de hidratação na rede municipal.</li>
+                            <li><strong>NC5:</strong> Suspensão de atividades externas e eventos de massa.</li>
+                        </ul>
                     </div>
 
                     <div class="bg-white/5 border-l-4 border-teal-500 p-6 rounded-xl">

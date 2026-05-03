@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Framework Estatístico e Preditivo - CISC Belém</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'dark' });
+    </script>
+
+    <style>
+        :root {
+            --primary: #00d2ff;
+            --secondary: #3a7bd5;
+            --bg-dark: #0a0e14;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --text-main: #e0e6ed;
+            --text-dim: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.8);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(0, 210, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 90%, rgba(58, 123, 213, 0.08) 0%, transparent 40%);
+            min-height: 100vh;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.1);
+        }
+
+        h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+        .formula {
+            font-family: 'Courier New', Courier, monospace;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body class="p-8">
+    <header class="max-w-6xl mx-auto mb-12 flex justify-between items-end">
+        <div>
+            <h1 class="text-4xl font-black text-white tracking-tight mb-2">Framework <span class="text-primary italic">Estatístico</span></h1>
+            <p class="text-slate-400 uppercase text-xs font-bold tracking-[0.2em]">Inteligência Preditiva & Ciência de Dados (Padrão Rio CIE/COR)</p>
+        </div>
+        <div class="flex gap-4">
+            <div class="px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-slate-300">
+                VERSÃO 2.0 (FINAL)
+            </div>
+            <a href="index.html" class="px-4 py-2 rounded-lg bg-primary text-slate-900 text-xs font-black hover:scale-105 transition-all">
+                VOLTAR AO HUB
+            </a>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Coluna 1: Metodologia e Modelagem -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <section class="content-card rounded-2xl p-8">
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i class="fas fa-microchip text-primary"></i> Arquitetura Tecnológica e Motor Analítico
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="p-5 bg-blue-950/20 border border-blue-500/30 rounded-xl hover:border-blue-400 transition-colors">
+                        <h4 class="font-bold text-blue-400 mb-2 flex items-center gap-2">
+                            <i class="fab fa-python"></i> Engenharia (Python)
+                        </h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">Pipeline de <b>ETL Massivo</b> e orquestração via <b>Apache Airflow</b>. Integra modelos globais (<b>ECMWF, GFS</b>) e dados nacionais (<b>INMET, CEMADEN</b>).</p>
+                    </div>
+                    <div class="p-5 bg-indigo-950/20 border border-indigo-500/30 rounded-xl hover:border-indigo-400 transition-colors">
+                        <h4 class="font-bold text-indigo-400 mb-2 flex items-center gap-2">
+                            <i class="fab fa-r-project"></i> Motor Matemático (R)
+                        </h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed">Cérebro analítico especializado em <b>EpiEstim</b>, <b>surveillance</b> e modelos <b>DLNM</b> (Distributed Lag Non-linear Models).</p>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-white/5 rounded-xl border border-white/10 text-xs text-slate-300">
+                    <i class="fas fa-search-nodes text-primary mr-2"></i> <b>Estatística Exploratória:</b> Cálculo de correlações de <b>Pearson/Spearman</b> entre variáveis climáticas e agravos (ex: Calor x Causas Sensíveis, Chuva x Leptospirose).
+                </div>
+            </section>
+
+            <section class="content-card rounded-2xl p-8">
+                <h2 class="text-2xl font-bold text-white mb-6">Detecção de Anomalias e Predição</h2>
+                <div class="space-y-6">
+                    <div class="flex gap-4">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <i class="fas fa-bullseye text-primary"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white text-sm">CUSUM & SaTScan</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">Monitoramento de <b>Diagramas de Controle</b> para detectar excessos de mortalidade ou atendimentos em relação ao <i>baseline</i> histórico esperado, com varredura espacial para clusters ativos.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <i class="fas fa-bolt-lightning text-primary"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white text-sm">Nowcasting (Correção de Delay)</h4>
+                            <p class="text-xs text-slate-400 leading-relaxed">Estima a quantidade real de casos ocorrendo "agora", corrigindo matematicamente os atrasos de notificação dos sistemas oficiais para uma vigilância fiel ao momento presente.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <i class="fas fa-brain text-primary"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-white text-sm">Arquiteturas de Machine Learning</h4>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span class="px-2 py-1 bg-white/10 rounded text-[9px] font-black text-slate-300 uppercase tracking-widest">ARIMA + XGBoost</span>
+                                <span class="px-2 py-1 bg-white/10 rounded text-[9px] font-black text-slate-300 uppercase tracking-widest">GAM (Não-Linear)</span>
+                                <span class="px-2 py-1 bg-white/10 rounded text-[9px] font-black text-slate-300 uppercase tracking-widest">Prophet (Sazonal)</span>
+                                <span class="px-2 py-1 bg-white/10 rounded text-[9px] font-black text-slate-300 uppercase tracking-widest">Epinow2 [R(t)]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Coluna 2: Gatilhos e Decisão -->
+        <div class="space-y-8">
+            <section class="content-card rounded-2xl p-6 border-l-4 border-amber-500">
+                <h3 class="text-lg font-bold text-white mb-4">Protocolo de Calor (NC1-NC5)</h3>
+                <div class="space-y-4">
+                    <p class="text-xs text-slate-400">Classificação de risco com <b>3 dias de antecedência</b> via modelos numéricos globais:</p>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3 p-2 bg-green-500/10 border border-green-500/30 rounded opacity-60">
+                            <span class="text-[9px] font-black text-green-500">NC1</span>
+                            <span class="text-[10px] text-slate-300 font-bold uppercase">Normalidade</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded">
+                            <span class="text-[9px] font-black text-yellow-500">NC2</span>
+                            <span class="text-[10px] text-slate-300 font-bold uppercase">Observação</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 bg-orange-500/10 border border-orange-500/30 rounded">
+                            <span class="text-[9px] font-black text-orange-500">NC3</span>
+                            <span class="text-[10px] text-slate-300 font-bold uppercase">Atenção</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 bg-red-500/10 border border-red-500/30 rounded">
+                            <span class="text-[9px] font-black text-red-500">NC4</span>
+                            <span class="text-[10px] text-slate-300 font-bold uppercase">Alerta</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-2 bg-purple-500/20 border border-purple-500/40 rounded animate-pulse">
+                            <span class="text-[9px] font-black text-purple-400">NC5</span>
+                            <span class="text-[10px] text-slate-300 font-bold uppercase">Crise / Emergência</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-card rounded-2xl p-6 bg-primary/5 border border-primary/20">
+                <h3 class="text-lg font-bold text-white mb-4">Análise de Extremos</h3>
+                <div class="space-y-2">
+                    <span class="text-[10px] text-slate-500 font-black uppercase">Quantis de Controle (Baselines):</span>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                        <span class="text-[10px] px-2 py-0.5 bg-white/5 rounded border border-white/10 text-slate-400 font-mono">2.5%</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-white/5 rounded border border-white/10 text-slate-400 font-mono">5.0%</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-white/5 rounded border border-white/10 text-slate-400 font-mono">10.0%</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-white/5 rounded border border-white/10 text-slate-400 font-mono">90.0%</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-white/5 rounded border border-white/10 text-slate-400 font-mono">95.0%</span>
+                        <span class="text-[10px] px-2 py-0.5 bg-primary/20 rounded border border-primary/40 text-primary font-mono font-bold">97.5%</span>
+                    </div>
+                </div>
+                <div class="mt-6 pt-6 border-t border-white/5">
+                    <h4 class="text-xs font-bold text-white mb-2">Vigilância Sindrômica PLN</h4>
+                    <p class="text-[10px] text-slate-400 leading-relaxed">
+                        Algoritmos de <b>PLN</b> aplicados em CIDs e textos de prontuários eletrônicos das UPAs para detecção de anomalias quase em tempo real.
+                    </p>
+                </div>
+            </section>
+
+            <section class="content-card rounded-2xl p-6 bg-amber-900/10 border-amber-500/30">
+                <h3 class="text-lg font-bold text-white mb-2 italic">Lag Distribuído (DLNM)</h3>
+                <p class="text-[11px] text-slate-400 leading-relaxed">
+                    "O impacto da temperatura e precipitação sobre a saúde é modelado via efeitos não-lineares com <b>lags</b> de até 21 dias."
+                </p>
+            </section>
+        </div>
+    </main>
+
+    <footer class="max-w-6xl mx-auto mt-12 pt-8 border-t border-white/5 text-center text-[10px] text-slate-500 uppercase tracking-widest">
+        &copy; 2026 Centro de Informação em Saúde e Clima (CISC) — Integração Rio/Belém
+    </footer>
+</body>
+</html>

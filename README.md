@@ -120,6 +120,7 @@ de saúde antes da emergência se instalar**.
 | [**Pipeline VISA**](visa_etl_detalhado.html) | Dados de DTA, VIGIAGUA, qualidade do ar e monitoramento de açaí. |
 | [**Arquitetura HITL**](hitl_devs_arquitetura.html) | Motor de decisão IA + humanos (Learning Loop). |
 | [**Estratégia de IA/HTR**](cisc_ia_modelagem.html) | Modelos, hardware e fine-tuning local. |
+| [**Framework Estatístico**](cisc_framework_estatistico.html) | Regressão Quantílica e Modelagem Preditiva (Padrão Rio). |
 | [**Sala de Situação**](sala_situacao.html) | Videowall, painéis real-time e protocolo de alertas. |
 | [**Matriz de Alertas**](matriz_alertas.html) | Gatilhos climáticos × thresholds epidemiológicos × sanitários. |
 
