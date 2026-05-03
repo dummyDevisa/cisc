@@ -82,15 +82,13 @@ function updateAIInsights(type, sub = null) {
     let thoughtText = '';
 
     if (type === 'clima') {
-        probVal.innerHTML = isPredictiveMode ? "94.5%" : "92.1%";
-        probDesc.innerHTML = `Risco de <b>Inundação Pluvial</b> e <b>Estresse Térmico</b>.${ncBadge}`;
+        probVal.innerHTML = "96.2%";
+        probDesc.innerHTML = `Alerta Amarelo INMET: <b>Perigo Potencial</b> (Chuvas Intensas).${ncBadge}`;
         actionsHtml = `
-            <li class="flex gap-2"><i class="fas fa-check-circle text-primary mt-0.5"></i><span>Acionar Gabinete de Crise intersetorial.</span></li>
-            <li class="flex gap-2"><i class="fas fa-check-circle text-primary mt-0.5"></i><span>Suspensão imediata de aulas externas e eventos ao ar livre.</span></li>
+            <li class="flex gap-2"><i class="fas fa-check-circle text-primary mt-0.5"></i><span>Monitoramento de áreas críticas (DABEN, DAOUT).</span></li>
+            <li class="flex gap-2"><i class="fas fa-check-circle text-primary mt-0.5"></i><span>Protocolo de aviso prévio Defesa Civil (199).</span></li>
         `;
-        thoughtText = isPredictiveMode
-            ? '"Modelagem ARIMA+XGBoost indica transbordamento iminente do Canal do Galo nas próximas 12h."'
-            : '"Anomalia de precipitação em 72h superou o percentil 95 histórico."';
+        thoughtText = '"INMET emitiu Alerta Amarelo para Belém e RMB. Precipitações de até 30mm/h e ventos de 60km/h previstos até 06/05."';
     } else if (type === 'epi') {
         probVal.innerHTML = isPredictiveMode ? "88.9%" : "84.2%";
         probDesc.innerHTML = `Probabilidade de surto de <b>Arboviroses</b> elevada.${ncBadge}`;
@@ -1923,6 +1921,7 @@ function renderThresholdLegend(footerId, thresholds) {
 
 // --- SYSTEM LIVE FEED (PUSH NOTIFICATIONS) ---
 const pushEventsPool = [
+    { type: 'DATA', title: 'Alerta INMET', message: 'Alerta AMARELO (Perigo Potencial) ativado para Belém e RMB até 06/05. Risco de alagamentos.', icon: 'fa-exclamation-triangle' },
     { type: 'ACTION', title: 'Defesa Civil', message: 'CISC notifica Defesa Civil Municipal via API sobre pico de maré previsto para 16h.', icon: 'fa-hard-hat' },
     { type: 'INSIGHT', title: 'Modelo PaliGemma', message: 'Identificada anomalia térmica (+2.5°C) cruzada com alta no LIRAa. Risco de arbovirose escalado.', icon: 'fa-robot' },
     { type: 'TASK', title: 'Pipeline OCR', message: 'Processamento de visão computacional concluído em 150 fichas do e-SUS. Matriz CUSUM atualizada.', icon: 'fa-file-medical-alt' },
