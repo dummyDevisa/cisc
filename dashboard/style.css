@@ -1280,6 +1280,7 @@ body.light-theme .protocol-card {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 5px;
+    white-space: nowrap;
 }
 
 .panel-body-top {
@@ -1335,6 +1336,9 @@ body.light-theme .protocol-card {
     gap: 8px;
     margin-bottom: 4px; /* Reduced margin */
     font-size: 10px; /* Reduced font size */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .protocol-info-row i {

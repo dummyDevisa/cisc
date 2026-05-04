@@ -1191,11 +1191,13 @@ function updateDataRange(days, btn, panel) {
 
         if (activeCard) {
             currentType = activeCard.id.replace('val-', '');
-            if (currentType === 'arbo') { currentData = arbo; currentUnit = 'Casos'; }
+            if (currentType === 'dda') { currentData = dda; currentUnit = ''; }
+            else if (currentType === 'arbo') { currentData = arbo; currentUnit = 'Casos'; }
             else if (currentType === 'lepto') { currentData = lepto; currentUnit = 'Casos'; }
             else if (currentType === 'mort') { currentData = mort; currentUnit = 'Óbitos'; }
             updateEpiChart(currentType, days);
         } else {
+            currentUnit = '';
             updateEpiChart('dda', days); // Default inicial
         }
 
@@ -1333,7 +1335,7 @@ const commonOptions = {
         labels: {
             show: true,
             style: { colors: '#94a3b8', fontSize: '9px' },
-            rotate: -45,
+            rotate: 0,
             offsetY: 0,
             hideOverlappingLabels: true
         },
@@ -1467,12 +1469,19 @@ function updateVisaChart(type, days = null) {
     const level = updateBadge('val-' + type, data.last, info.unit, data.trend);
     updatePanelStatus('visa', level);
 
+    // Update Top Indicator
+    document.getElementById('top-val-visa').innerText = data.last;
+    document.getElementById('top-unit-visa').innerText = info.unit === '' ? '' : (info.unit.includes('%') ? '%' : 'Casos');
+
     const observedLine = data.observed.concat(Array(5).fill(null));
     const forecastLine = Array(days - 1).fill(null).concat(data.forecast);
 
     charts.visa.updateOptions({
         chart: { type: 'area', stacked: false },
-        xaxis: { categories: labels },
+        xaxis: { 
+            categories: labels,
+            tickAmount: days > 10 ? 8 : undefined
+        },
         series: [
             { name: info.name + ' (Real)', type: 'area', data: observedLine },
             ...(isPredictiveMode ? [{ name: info.name + ' (Proj AI)', type: 'line', data: forecastLine }] : [])
@@ -1544,12 +1553,19 @@ function updateHidroChart(type, days = null) {
     const level = updateBadge('val-' + type, data.last, info.unit, data.trend);
     updatePanelStatus('hidro', level);
 
+    // Update Top Indicator
+    document.getElementById('top-val-hidro').innerText = data.last;
+    document.getElementById('top-unit-hidro').innerText = info.unit; // usually 'm'
+
     const observedLine = data.observed.concat(Array(5).fill(null));
     const forecastLine = Array(days - 1).fill(null).concat(data.forecast);
 
     charts.hidro.updateOptions({
         chart: { type: 'area', stacked: false },
-        xaxis: { categories: labels },
+        xaxis: { 
+            categories: labels,
+            tickAmount: days > 10 ? 8 : undefined
+        },
         series: [
             { name: info.name + ' (Real)', type: 'area', data: observedLine },
             ...(isPredictiveMode ? [{ name: info.name + ' (Proj AI)', type: 'line', data: forecastLine }] : [])
@@ -1642,6 +1658,10 @@ function updateClimaChart(type, days = null) {
     const level = updateBadge('val-' + type, data.last, info.unit, data.trend);
     updatePanelStatus('clima', level);
 
+    // Update Top Indicator
+    document.getElementById('top-val-clima').innerText = data.last;
+    document.getElementById('top-unit-clima').innerText = info.unit; // '°C' or 'mm'
+
     const observedLine = data.observed.concat(Array(5).fill(null));
     const forecastLine = Array(days - 1).fill(null).concat(data.forecast);
 
@@ -1683,7 +1703,7 @@ function updateEpiChart(type, days = null) {
 
     const chartConfigs = {
         dda: {
-            name: 'DDA', unit: ' casos', color: '#ef4444',
+            name: 'DDA', unit: '', color: '#ef4444',
             title: 'DDA / SRAG (Sintomas)',
             annotations: [
                 { y: 200, borderColor: '#eab308', strokeDashArray: 0, desc: '+20% base / 1 sem', label: { show: true, text: '+20%', style: { color: '#fff', background: '#eab308' } } },
@@ -1739,6 +1759,10 @@ function updateEpiChart(type, days = null) {
     // Unified Sync: Update KPI badge and Panel/Top Status
     const level = updateBadge('val-' + type, data.last, info.unit, data.trend);
     updatePanelStatus('epi', level);
+
+    // Update Top Indicator
+    document.getElementById('top-val-epi').innerText = data.last;
+    document.getElementById('top-unit-epi').innerText = info.unit === '' ? '' : (info.unit.includes('ób') ? 'Óbitos' : 'Casos');
 
     if (type === 'mort') {
         const idososData = getFromCache('epi', 'mort_idosos', days);
